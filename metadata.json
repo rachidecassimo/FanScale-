@@ -1,0 +1,6 @@
+{
+  "name": "FanScale",
+  "description": "Plataforma social e de subscrição de conteúdo para criadores em Moçambique com pagamentos M-Pesa, e-Mola, mKesh e cartões.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
