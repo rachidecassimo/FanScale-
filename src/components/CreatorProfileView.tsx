@@ -17,7 +17,8 @@ import {
   Award,
   Video,
   Send,
-  ArrowLeft
+  ArrowLeft,
+  LogOut
 } from 'lucide-react';
 import { CreatorProfile, Post, CreatorReview, LiveSession } from '../types';
 import { PostCard } from './PostCard';
@@ -40,6 +41,7 @@ interface CreatorProfileViewProps {
   onOpenRateModal: (creator: CreatorProfile, liveId?: string) => void;
   onLikeReview?: (reviewId: string) => void;
   onOpenLiveRoom?: (session: LiveSession) => void;
+  onLogout?: () => void;
 }
 
 export const CreatorProfileView: React.FC<CreatorProfileViewProps> = ({
@@ -60,6 +62,7 @@ export const CreatorProfileView: React.FC<CreatorProfileViewProps> = ({
   onOpenRateModal,
   onLikeReview,
   onOpenLiveRoom,
+  onLogout,
 }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'exclusive' | 'ppv' | 'reviews' | 'lives'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'feed'>('feed');
@@ -215,6 +218,18 @@ export const CreatorProfileView: React.FC<CreatorProfileViewProps> = ({
                     : `Subscrever — ${creator.subscriptionPriceMonthly} MT/mês`}
                 </span>
               </button>
+
+              {/* Sair da Conta Button */}
+              {onLogout && (
+                <button
+                  onClick={onLogout}
+                  className="flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3.5 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-colors"
+                  title="Terminar Sessão da Conta"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Sair</span>
+                </button>
+              )}
             </div>
           </div>
 

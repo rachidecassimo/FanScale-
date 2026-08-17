@@ -19,7 +19,8 @@ import {
   Star,
   Radio,
   ThumbsUp,
-  Award
+  Award,
+  LogOut
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -40,6 +41,7 @@ interface CreatorStudioProps {
   onOpenCreateModal: () => void;
   onRequestPayout: (amountMT: number, method: string, phoneOrIban: string) => void;
   onUpdatePricing: (monthlyMT: number, quarterlyMT: number) => void;
+  onLogout?: () => void;
 }
 
 export const CreatorStudio: React.FC<CreatorStudioProps> = ({
@@ -49,6 +51,7 @@ export const CreatorStudio: React.FC<CreatorStudioProps> = ({
   onOpenCreateModal,
   onRequestPayout,
   onUpdatePricing,
+  onLogout,
 }) => {
   const [activeStudioTab, setActiveStudioTab] = useState<'overview' | 'content' | 'pricing' | 'reviews' | 'affiliates' | 'ai_assistant'>('overview');
   const [showPayoutModal, setShowPayoutModal] = useState(false);
@@ -132,7 +135,7 @@ export const CreatorStudio: React.FC<CreatorStudioProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={() => setShowPayoutModal(true)}
             className="rounded-full bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/30 hover:bg-emerald-700 transition-all flex items-center gap-1.5"
@@ -148,6 +151,17 @@ export const CreatorStudio: React.FC<CreatorStudioProps> = ({
             <PlusCircle className="h-4 w-4" />
             <span>Novo Conteúdo</span>
           </button>
+
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="rounded-full border border-stone-700 bg-stone-800/90 px-4 py-2.5 text-xs font-bold text-stone-300 hover:bg-rose-950/60 hover:text-rose-400 hover:border-rose-800 transition-all flex items-center gap-1.5"
+              title="Terminar sessão da conta de criador"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Sair da Conta</span>
+            </button>
+          )}
         </div>
       </div>
 

@@ -10,7 +10,8 @@ import {
   DollarSign, 
   Lock,
   Eye,
-  FileText
+  FileText,
+  LogOut
 } from 'lucide-react';
 import { AdminReport, KycRequest } from '../types';
 
@@ -19,6 +20,7 @@ interface AdminDashboardProps {
   kycRequests: KycRequest[];
   onResolveReport: (reportId: string, action: 'keep' | 'remove') => void;
   onResolveKyc: (kycId: string, action: 'approve' | 'reject') => void;
+  onLogout?: () => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -26,6 +28,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   kycRequests = [],
   onResolveReport,
   onResolveKyc,
+  onLogout,
 }) => {
   const [adminTab, setAdminTab] = useState<'metrics' | 'reports' | 'kyc'>('metrics');
 
@@ -63,10 +66,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-400 border border-emerald-500/30">
+        <div className="flex items-center gap-3">
+          <span className="rounded-full bg-emerald-500/20 px-3 py-1.5 text-xs font-bold text-emerald-400 border border-emerald-500/30">
             ● Plataforma Operacional
           </span>
+
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="rounded-full border border-stone-700 bg-stone-800/90 px-4 py-1.5 text-xs font-bold text-stone-300 hover:bg-rose-950/60 hover:text-rose-400 hover:border-rose-800 transition-all flex items-center gap-1.5"
+              title="Terminar sessão de administrador"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Sair da Conta</span>
+            </button>
+          )}
         </div>
       </div>
 

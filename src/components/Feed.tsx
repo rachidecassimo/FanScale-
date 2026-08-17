@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StoriesReel } from './StoriesReel';
 import { PostCard } from './PostCard';
-import { Post, Story, CreatorProfile } from '../types';
+import { Post, Story, CreatorProfile, AuthUser } from '../types';
 import { 
   Sparkles, 
   Flame, 
@@ -12,13 +12,16 @@ import {
   ShieldCheck, 
   CheckCircle,
   PlusCircle,
-  Coins
+  Coins,
+  LogOut,
+  User as UserIcon
 } from 'lucide-react';
 
 interface FeedProps {
   posts: Post[];
   stories: Story[];
   creators: CreatorProfile[];
+  currentUser?: AuthUser | null;
   onLikePost: (postId: string) => void;
   onSavePost: (postId: string) => void;
   onAddComment: (postId: string, text: string) => void;
@@ -32,6 +35,7 @@ interface FeedProps {
   onReportPost: (post: Post) => void;
   onOpenKycModal: () => void;
   onOpenWallet: () => void;
+  onLogout?: () => void;
   walletBalanceMT: number;
 }
 
@@ -39,6 +43,7 @@ export const Feed: React.FC<FeedProps> = ({
   posts = [],
   stories = [],
   creators = [],
+  currentUser,
   onLikePost,
   onSavePost,
   onAddComment,
@@ -52,6 +57,7 @@ export const Feed: React.FC<FeedProps> = ({
   onReportPost,
   onOpenKycModal,
   onOpenWallet,
+  onLogout,
   walletBalanceMT = 0,
 }) => {
   const [feedFilter, setFeedFilter] = useState<'all' | 'following' | 'exclusive' | 'trending'>('all');
@@ -150,6 +156,34 @@ export const Feed: React.FC<FeedProps> = ({
         {/* Right Sidebar (4 cols on desktop) */}
         <div className="hidden lg:block lg:col-span-4 space-y-6">
           
+          {/* User Account Info Bar (if logged in) */}
+          {currentUser && (
+            <div className="rounded-3xl border border-stone-200 bg-white p-4 shadow-sm flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <img
+                  src={currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}
+                  alt={currentUser.name}
+                  className="h-10 w-10 rounded-full object-cover ring-2 ring-pink-500/30 flex-shrink-0"
+                />
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-stone-900 truncate">{currentUser.name}</p>
+                  <p className="text-[11px] text-stone-400 truncate">@{currentUser.username}</p>
+                </div>
+              </div>
+
+              {onLogout && (
+                <button
+                  onClick={onLogout}
+                  className="flex items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-colors flex-shrink-0"
+                  title="Sair da Conta (Logout)"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Sair</span>
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Quick Wallet Summary Card */}
           <div className="rounded-3xl border border-pink-100 bg-gradient-to-br from-pink-500/10 via-rose-500/5 to-white p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">

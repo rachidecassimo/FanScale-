@@ -8,7 +8,9 @@ import {
   MOCK_NOTIFICATIONS, 
   MOCK_WALLET_TRANSACTIONS,
   MOCK_ADMIN_REPORTS,
-  MOCK_KYC_REQUESTS
+  MOCK_KYC_REQUESTS,
+  MOCK_REVIEWS,
+  MOCK_LIVE_SESSIONS
 } from './data/mockData';
 import { 
   UserRole, 
@@ -22,7 +24,9 @@ import {
   AdminReport,
   KycRequest,
   PaymentProvider,
-  PostVisibility
+  PostVisibility,
+  CreatorReview,
+  LiveSession
 } from './types';
 
 import { Header } from './components/Header';
@@ -43,6 +47,9 @@ import { PaymentPromptModal } from './components/PaymentPromptModal';
 import { TipModal } from './components/TipModal';
 import { CreatePostModal } from './components/CreatePostModal';
 import { KycModal } from './components/KycModal';
+import { RateCreatorModal } from './components/RateCreatorModal';
+import { LiveRoomModal } from './components/LiveRoomModal';
+import { AgeGateModal } from './components/AgeGateModal';
 
 export default function App() {
   // Authentication & Current User State
@@ -87,6 +94,8 @@ export default function App() {
   const [walletBalanceMT, setWalletBalanceMT] = useState<number>(2500);
   const [reports, setReports] = useState<AdminReport[]>(MOCK_ADMIN_REPORTS);
   const [kycRequests, setKycRequests] = useState<KycRequest[]>(MOCK_KYC_REQUESTS);
+  const [reviews, setReviews] = useState<CreatorReview[]>(MOCK_REVIEWS);
+  const [liveSessions, setLiveSessions] = useState<LiveSession[]>(MOCK_LIVE_SESSIONS);
 
   // Modal States
   const [activeStoryIndex, setActiveStoryIndex] = useState<number | null>(null);
@@ -94,6 +103,16 @@ export default function App() {
   const [tippingCreator, setTippingCreator] = useState<{ id: string; name: string } | null>(null);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [showKycModal, setShowKycModal] = useState<boolean>(false);
+  const [ratingModalCreator, setRatingModalCreator] = useState<CreatorProfile | null>(null);
+  const [ratingModalLiveId, setRatingModalLiveId] = useState<string | undefined>(undefined);
+  const [activeLiveSession, setActiveLiveSession] = useState<LiveSession | null>(null);
+  const [showAgeGate, setShowAgeGate] = useState<boolean>(() => {
+    try {
+      return !localStorage.getItem('fanscale_age_verified_18');
+    } catch {
+      return false;
+    }
+  });
 
   // Mobile Payment Prompt (USSD Simulation)
   const [paymentPrompt, setPaymentPrompt] = useState<{
@@ -113,6 +132,155 @@ export default function App() {
     setTimeout(() => {
       setToastMessage((prev) => (prev === msg ? null : prev));
     }, 3500);
+  };
+
+  const handleOpenRateModal = (creator: CreatorProfile, liveId?: string) => {
+    setRatingModalCreator(creator);
+    setRatingModalLiveId(liveId);
+  };
+
+  const handleOpenLiveRoom = (session: LiveSession) => {
+    setActiveLiveSession(session);
+  };
+
+  const handleLikeReview = (reviewId: string) => {
+    setReviews((prev) =>
+      prev.map((r) =>
+        r.id === reviewId
+          ? { ...r, isLiked: !r.isLiked, likesCount: r.isLiked ? r.likesCount - 1 : r.likesCount + 1 }
+          : r
+      )
+    );
+    showToast('Classificação marcada como útil!');
+  };
+
+  const handleSubmitReview = (reviewData: {
+    creatorId: string;
+    rating: number;
+    categories: {
+      contentQuality: number;
+      interaction: number;
+      livePerformance: number;
+    };
+    title: string;
+    comment: string;
+    liveId?: string;
+    liveTitle?: string;
+    tags: string[];
+  }) => {
+    const targetCreator = creators.find((c) => c.id === reviewData.creatorId);
+    if (!targetCreator) return;
+
+    const newReview: CreatorReview = {
+      id: `rev-${Date.now()}`,
+      creatorId: reviewData.creatorId,
+      userId: currentUser?.id || 'u_fan_me',
+      userName: currentUser?.name || 'Carlos Tembe',
+      userHandle: currentUser?.username || 'carlos.vip',
+      userAvatar: currentUser?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      userBadge: 'Apoiador FanScale ⭐',
+      rating: reviewData.rating,
+      categories: reviewData.categories,
+      title: reviewData.title,
+      comment: reviewData.comment,
+      createdAt: 'Agora',
+      likesCount: 1,
+      isLiked: false,
+      isVerifiedSubscriber: true,
+      liveId: reviewData.liveId,
+      liveTitle: reviewData.liveTitle,
+      tags: reviewData.tags,
+    };
+
+    setReviews((prev) => [newReview, ...prev]);
+
+    // Update Creator's average rating and breakdown
+    setCreators((prev) =>
+      prev.map((c) => {
+        if (c.id === reviewData.creatorId) {
+          const currentCount = c.ratingCount || 10;
+          const currentAvg = c.ratingAverage || 4.8;
+          const newTotal = currentCount + 1;
+          const newAvg = Number(((currentAvg * currentCount + reviewData.rating) / newTotal).toFixed(2));
+          
+          const newBreakdown = { ...(c.ratingBreakdown || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }) };
+          const starKey = Math.min(5, Math.max(1, Math.round(reviewData.rating))) as 1 | 2 | 3 | 4 | 5;
+          newBreakdown[starKey] = (newBreakdown[starKey] || 0) + 1;
+
+          let updatedLiveAvg = c.liveRatingAverage;
+          let updatedLiveCount = c.liveRatingCount;
+          if (reviewData.liveId) {
+            const prevLiveCount = c.liveRatingCount || 5;
+            const prevLiveAvg = c.liveRatingAverage || 4.8;
+            updatedLiveCount = prevLiveCount + 1;
+            updatedLiveAvg = Number(((prevLiveAvg * prevLiveCount + reviewData.rating) / updatedLiveCount).toFixed(2));
+          }
+
+          return {
+            ...c,
+            ratingAverage: newAvg,
+            ratingCount: newTotal,
+            ratingBreakdown: newBreakdown,
+            liveRatingAverage: updatedLiveAvg,
+            liveRatingCount: updatedLiveCount,
+          };
+        }
+        return c;
+      })
+    );
+
+    // Update LiveSession if applicable
+    if (reviewData.liveId) {
+      setLiveSessions((prev) =>
+        prev.map((ls) => {
+          if (ls.id === reviewData.liveId) {
+            const prevCount = ls.ratingCount || 1;
+            const prevAvg = ls.ratingAverage || 4.9;
+            const updatedCount = prevCount + 1;
+            const updatedAvg = Number(((prevAvg * prevCount + reviewData.rating) / updatedCount).toFixed(2));
+            return {
+              ...ls,
+              ratingAverage: updatedAvg,
+              ratingCount: updatedCount,
+            };
+          }
+          return ls;
+        })
+      );
+    }
+
+    setRatingModalCreator(null);
+    setRatingModalLiveId(undefined);
+
+    confetti({
+      particleCount: 70,
+      spread: 80,
+      origin: { y: 0.6 },
+    });
+
+    showToast(`⭐ Avaliação de ${reviewData.rating} estrelas enviada para ${targetCreator.name}!`);
+  };
+
+  const handleQuickRateLive = (liveId: string, stars: number) => {
+    const session = liveSessions.find((ls) => ls.id === liveId);
+    if (!session) return;
+    const creator = creators.find((c) => c.id === session.creatorId);
+    if (!creator) return;
+
+    handleSubmitReview({
+      creatorId: session.creatorId,
+      rating: stars,
+      categories: {
+        contentQuality: stars,
+        interaction: stars,
+        livePerformance: stars,
+      },
+      title: `Classificação da Live: ${session.title}`,
+      comment: `Avaliação rápida durante a transmissão em direto: ${stars} estrelas!`,
+      liveId: session.id,
+      liveTitle: session.title,
+      tags: ['Live Ao Vivo 🔴', 'Transmissão Top 🔥'],
+    });
   };
 
   // Helper count badges
@@ -722,6 +890,7 @@ export default function App() {
               <ExplorePage
                 creators={creators}
                 posts={posts}
+                liveSessions={liveSessions}
                 onSelectCreator={(id) => {
                   setSelectedCreatorId(id);
                   setCurrentTab('profile');
@@ -729,6 +898,8 @@ export default function App() {
                 onOpenSubscribeModal={handleOpenSubscribeModal}
                 onOpenPpvUnlockModal={(post) => handleUnlockPpv(post.id, post.priceMT || 100)}
                 onLikePost={handleToggleLike}
+                onOpenLiveRoom={handleOpenLiveRoom}
+                onOpenRateModal={handleOpenRateModal}
               />
             )}
 
@@ -737,6 +908,8 @@ export default function App() {
               <CreatorProfileView
                 creator={currentCreatorProfile}
                 posts={posts.filter((p) => p.creatorId === currentCreatorProfile?.id)}
+                reviews={reviews}
+                liveSessions={liveSessions}
                 onBack={() => setCurrentTab('feed')}
                 onFollowToggle={(id) => {
                   setCreators((prev) =>
@@ -758,6 +931,9 @@ export default function App() {
                   handleResolveReport(post.id, 'keep');
                   showToast('Denúncia enviada para a equipa de moderação.');
                 }}
+                onOpenRateModal={handleOpenRateModal}
+                onLikeReview={handleLikeReview}
+                onOpenLiveRoom={handleOpenLiveRoom}
               />
             )}
 
@@ -766,6 +942,7 @@ export default function App() {
               <CreatorStudio
                 creator={currentCreatorProfile}
                 posts={posts.filter((p) => p.creatorId === currentCreatorProfile.id)}
+                reviews={reviews}
                 onOpenCreateModal={() => setShowCreateModal(true)}
                 onRequestPayout={handleRequestPayout}
                 onUpdatePricing={(monthlyMT, quarterlyMT) => {
@@ -925,6 +1102,51 @@ export default function App() {
           />
         </div>
       )}
+
+      {/* Rate Creator / Live Stream Modal */}
+      {ratingModalCreator && (
+        <RateCreatorModal
+          creator={ratingModalCreator}
+          liveSessions={liveSessions}
+          selectedLiveId={ratingModalLiveId}
+          onClose={() => {
+            setRatingModalCreator(null);
+            setRatingModalLiveId(undefined);
+          }}
+          onSubmitReview={handleSubmitReview}
+        />
+      )}
+
+      {/* Interactive Live Stream Room Modal */}
+      {activeLiveSession && (
+        <LiveRoomModal
+          session={activeLiveSession}
+          creator={creators.find((c) => c.id === activeLiveSession.creatorId) || creators[0]}
+          onClose={() => setActiveLiveSession(null)}
+          onOpenTipModal={handleOpenTipModal}
+          onOpenFullReviewModal={(creator, liveId) => {
+            setActiveLiveSession(null);
+            handleOpenRateModal(creator, liveId);
+          }}
+          onQuickRateLive={handleQuickRateLive}
+        />
+      )}
+
+      {/* 18+ Age Gate Modal */}
+      <AgeGateModal
+        isOpen={showAgeGate}
+        onConfirm={() => {
+          try {
+            localStorage.setItem('fanscale_age_verified_18', 'true');
+          } catch {}
+          setShowAgeGate(false);
+          showToast('Idade confirmada (+18). Bem-vindo ao FanScale!');
+        }}
+        onReject={() => {
+          showToast('Acesso restrito apenas a maiores de 18 anos.');
+          window.location.href = 'https://www.google.com';
+        }}
+      />
 
     </div>
   );
