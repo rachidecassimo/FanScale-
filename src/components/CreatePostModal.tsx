@@ -264,13 +264,29 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
             </select>
           </div>
 
+          {/* 18+ Protection and DRM Watermark Checkbox */}
+          <div className="rounded-2xl bg-stone-900 text-white p-3.5 space-y-2 border border-stone-800">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-pink-400 flex items-center gap-1.5">
+                <Flame className="h-4 w-4 text-pink-500" />
+                Conteúdo Adulto 18+ & Proteção DRM Ativa
+              </span>
+              <span className="rounded-full bg-pink-500/20 px-2 py-0.5 text-[9px] font-black text-pink-300">
+                18+
+              </span>
+            </div>
+            <p className="text-[10px] text-stone-300 leading-relaxed">
+              O sistema aplicará marca d'água invisível e visível anti-pirataria com o ID do comprador para coibir vazamentos.
+            </p>
+          </div>
+
           {/* Submit */}
           <button
             type="submit"
             disabled={!caption.trim()}
-            className="w-full rounded-full bg-gradient-to-r from-pink-600 via-rose-500 to-pink-500 py-3 text-xs font-bold text-white shadow-lg shadow-pink-500/30 hover:from-pink-700 hover:to-rose-600 transition-all disabled:opacity-50"
+            className="w-full rounded-2xl bg-gradient-to-r from-pink-600 via-rose-500 to-pink-500 py-3.5 text-xs font-bold text-white shadow-lg shadow-pink-500/30 hover:from-pink-700 hover:to-rose-600 transition-all disabled:opacity-50 hover:scale-[1.01]"
           >
-            Publicar no Feed FanScale 🇲🇿
+            Publicar Conteúdo Protegido no FanScale 🇲🇿
           </button>
 
         </form>

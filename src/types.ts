@@ -1,10 +1,26 @@
 export type UserRole = 'fan' | 'creator' | 'admin';
 
+export interface AuthUser {
+  id: string;
+  name: string;
+  username: string;
+  email?: string;
+  phone?: string;
+  avatar: string;
+  role: UserRole;
+  verified?: boolean;
+  walletBalanceMT: number;
+  bio?: string;
+  location?: string;
+  isAgeVerified18?: boolean;
+}
+
 export type PaymentProvider = 'mpesa' | 'emola' | 'mkesh' | 'card' | 'bank_transfer';
 
 export interface CreatorProfile {
   id: string;
-  name: string;
+  name: string; // Public artistic name (e.g. Luna Moz)
+  legalFullName?: string; // Private legal name (protected in admin KYC)
   username: string;
   avatar: string;
   coverImage: string;
@@ -12,6 +28,7 @@ export interface CreatorProfile {
   category: string;
   location: string;
   verified: boolean;
+  isAgeVerified18?: boolean;
   followersCount: number;
   subscribersCount: number;
   postsCount: number;
@@ -27,6 +44,65 @@ export interface CreatorProfile {
   isSubscribed?: boolean;
   isFollowing?: boolean;
   badge?: string;
+  affiliateCode?: string;
+  affiliateCommissionRate?: number; // e.g. 10%
+  isLive?: boolean;
+  liveViewersCount?: number;
+  liveTicketPriceMT?: number;
+  ratingAverage?: number; // e.g. 4.9
+  ratingCount?: number; // total number of reviews/ratings
+  ratingBreakdown?: {
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+  };
+  liveRatingAverage?: number; // Rating specific to live stream sessions
+  liveRatingCount?: number;
+}
+
+export interface CreatorReview {
+  id: string;
+  creatorId: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  userHandle: string;
+  userBadge?: string; // e.g. 'Subscritor VIP', 'Fã Frequente', 'Apoiador M-Pesa'
+  rating: number; // 1 to 5 stars
+  categories?: {
+    contentQuality: number; // 1-5 (Qualidade do Conteúdo)
+    interaction: number; // 1-5 (Interação & Respostas)
+    livePerformance: number; // 1-5 (Transmissões ao Vivo)
+  };
+  title?: string;
+  comment: string;
+  createdAt: string;
+  likesCount: number;
+  isLiked?: boolean;
+  isVerifiedSubscriber?: boolean;
+  liveId?: string; // If rating a specific live stream
+  liveTitle?: string; // e.g. "Live VIP Bastidores Exclusivos"
+  tags?: string[];
+}
+
+export interface LiveSession {
+  id: string;
+  creatorId: string;
+  creatorName: string;
+  creatorUsername: string;
+  creatorAvatar: string;
+  title: string;
+  category: string;
+  coverImage: string;
+  isLive: boolean;
+  viewersCount: number;
+  ticketPriceMT?: number;
+  ratingAverage: number;
+  ratingCount: number;
+  scheduledTime?: string;
+  description?: string;
 }
 
 export type PostVisibility = 'public' | 'subscriber' | 'ppv' | 'promo';
@@ -72,6 +148,8 @@ export interface Post {
   createdAt: string;
   viewsCount: number;
   locationTag?: string;
+  isAdultContent18?: boolean;
+  watermarkText?: string;
 }
 
 export interface Story {
@@ -162,12 +240,20 @@ export interface AdminReport {
 export interface KycRequest {
   id: string;
   creatorId: string;
-  creatorName: string;
+  creatorName: string; // Artistic / public name
+  legalFullName: string; // Private legal name
   creatorHandle: string;
   creatorAvatar: string;
+  dateOfBirth: string;
+  age: number;
   idDocumentType: 'BI' | 'Passaporte' | 'DIRE';
   documentNumber: string;
   nuitNumber: string;
+  documentFrontUrl?: string;
+  documentBackUrl?: string;
+  selfieWithIdUrl?: string;
+  isOver18Confirmed: boolean;
+  participantConsentConfirmed: boolean;
   status: 'pending' | 'approved' | 'rejected';
   submittedAt: string;
   phone: string;

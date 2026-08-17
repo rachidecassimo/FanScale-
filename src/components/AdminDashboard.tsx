@@ -37,7 +37,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     totalCreators: 3240,
     activeSubscriptions: 48920,
     gmvMT: 18450000,
-    platformRevenueMT: 2767500, // 15% take rate
+    platformRevenueMT: 3690000, // 20% platform commission (80% to creators)
+    creatorsPaidOutMT: 14760000, // 80%
     pendingReportsCount: safeReports.filter(r => r.status === 'pending').length,
     pendingKycCount: safeKyc.filter(k => k.status === 'pending').length
   };

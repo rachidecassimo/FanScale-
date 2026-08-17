@@ -9,40 +9,65 @@ import {
   Heart, 
   MessageCircle, 
   UserPlus,
-  Compass
+  Compass,
+  Star,
+  Radio,
+  Video,
+  Award
 } from 'lucide-react';
-import { CreatorProfile, Post } from '../types';
+import { CreatorProfile, Post, LiveSession } from '../types';
 import { CATEGORIES } from '../data/mockData';
 
 interface ExplorePageProps {
   creators: CreatorProfile[];
   posts: Post[];
+  liveSessions?: LiveSession[];
   onSelectCreator: (creatorId: string) => void;
   onOpenSubscribeModal: (creatorId: string) => void;
   onOpenPpvUnlockModal: (post: Post) => void;
   onLikePost: (postId: string) => void;
+  onOpenLiveRoom?: (session: LiveSession) => void;
+  onOpenRateModal?: (creator: CreatorProfile, liveId?: string) => void;
 }
 
 export const ExplorePage: React.FC<ExplorePageProps> = ({
   creators,
   posts,
+  liveSessions = [],
   onSelectCreator,
   onOpenSubscribeModal,
   onOpenPpvUnlockModal,
   onLikePost,
+  onOpenLiveRoom,
+  onOpenRateModal,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPostPreview, setSelectedPostPreview] = useState<Post | null>(null);
+  const [sortBy, setSortBy] = useState<'featured' | 'top_rated' | 'subscribers' | 'price_low'>('featured');
 
   // Filter creators
-  const filteredCreators = creators.filter((c) => {
+  let filteredCreators = creators.filter((c) => {
     const matchesCategory = selectedCategory === 'Todos' || c.category === selectedCategory;
     const matchesSearch = 
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.bio.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
+  });
+
+  // Sort creators
+  filteredCreators = [...filteredCreators].sort((a, b) => {
+    if (sortBy === 'top_rated') {
+      return (b.ratingAverage || 4.5) - (a.ratingAverage || 4.5);
+    }
+    if (sortBy === 'subscribers') {
+      return b.subscribersCount - a.subscribersCount;
+    }
+    if (sortBy === 'price_low') {
+      return a.subscriptionPriceMonthly - b.subscriptionPriceMonthly;
+    }
+    return 0; // default featured
   });
 
   // Filter posts
@@ -68,7 +93,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({
             Explora os Melhores Criadores Moçambicanos
           </h1>
           <p className="text-xs sm:text-sm text-white/90">
-            Descobre talentos de Maputo, Beira, Nampula e Inhambane. Apoia artistas e criadores com subscrições M-Pesa.
+            Descobre talentos de Maputo, Beira, Nampula e Inhambane. Consulta avaliações com estrelas reais e assiste a transmissões ao vivo.
           </p>
 
           {/* Search Box */}
@@ -117,110 +142,302 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({
         </div>
       </div>
 
-      {/* Featured Creators Carousel / Grid */}
+      {/* LIVE SESSIONS SHOWCASE */}
+      {liveSessions.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-600"></span>
+              </span>
+              <h2 className="font-display text-lg font-bold text-stone-900 flex items-center gap-2">
+                <span>Transmissões ao Vivo em Moçambique</span>
+                <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-extrabold text-rose-700 uppercase tracking-wider">
+                  Lives 🔴
+                </span>
+              </h2>
+            </div>
+            <span className="text-xs font-semibold text-rose-600">
+              {liveSessions.filter(l => l.isLive).length} ao vivo agora
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {liveSessions.map((session) => (
+              <div
+                key={session.id}
+                className="group overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm hover:shadow-lg hover:border-pink-200 transition-all flex flex-col justify-between"
+              >
+                <div className="relative h-44 w-full bg-stone-950 overflow-hidden">
+                  <img
+                    src={session.coverImage}
+                    alt={session.title}
+                    className="h-full w-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
+
+                  {/* Badges Top */}
+                  <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
+                    {session.isLive ? (
+                      <span className="flex items-center gap-1 rounded-full bg-rose-600 px-2.5 py-0.5 text-[10px] font-extrabold text-white animate-pulse">
+                        <Radio className="h-3 w-3" /> AO VIVO
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-md">
+                        {session.scheduledTime || 'Agendada'}
+                      </span>
+                    )}
+
+                    <span className="rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-md">
+                      {session.category}
+                    </span>
+                  </div>
+
+                  {/* Stars on Live overlay */}
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between text-white text-xs">
+                    <div className="flex items-center gap-1 bg-black/60 px-2.5 py-0.8 rounded-full backdrop-blur-md border border-white/10">
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <span className="font-bold text-amber-400">{session.ratingAverage.toFixed(1)}</span>
+                      <span className="text-[10px] text-stone-300">({session.ratingCount})</span>
+                    </div>
+
+                    {session.isLive && (
+                      <span className="text-[10px] font-bold text-rose-300">
+                        {session.viewersCount} a assistir
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Body */}
+                <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                  <div className="space-y-1.5">
+                    <div 
+                      onClick={() => onSelectCreator(session.creatorId)}
+                      className="flex items-center gap-2 cursor-pointer group-hover:text-pink-600"
+                    >
+                      <img
+                        src={session.creatorAvatar}
+                        alt={session.creatorName}
+                        className="h-6 w-6 rounded-full object-cover border border-pink-500"
+                      />
+                      <span className="text-xs font-bold text-stone-800 line-clamp-1">
+                        {session.creatorName}
+                      </span>
+                    </div>
+
+                    <h3 className="font-display text-xs font-bold text-stone-900 line-clamp-2 leading-snug">
+                      {session.title}
+                    </h3>
+                  </div>
+
+                  <div className="pt-2 border-t border-stone-100 flex items-center gap-2">
+                    <button
+                      onClick={() => onOpenLiveRoom && onOpenLiveRoom(session)}
+                      className="flex-1 rounded-full bg-gradient-to-r from-pink-600 to-rose-500 py-2 text-xs font-bold text-white shadow hover:scale-[1.02] transition-all text-center"
+                    >
+                      {session.isLive ? 'Assistir Agora 🔴' : 'Aceder à Sala'}
+                    </button>
+                    {onOpenRateModal && (
+                      <button
+                        onClick={() => {
+                          const cr = creators.find(c => c.id === session.creatorId);
+                          if (cr) onOpenRateModal(cr, session.id);
+                        }}
+                        className="rounded-full border border-amber-300 bg-amber-50 p-2 text-amber-700 hover:bg-amber-100 transition-colors"
+                        title="Avaliar esta Live com Estrelas"
+                      >
+                        <Star className="h-3.5 w-3.5 fill-amber-400" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Featured Creators Section */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Flame className="h-5 w-5 text-pink-600 fill-pink-600" />
             <h2 className="font-display text-lg font-bold text-stone-900">
-              Criadores em Destaque em Moçambique
+              Criadores Moçambicanos em Destaque
             </h2>
           </div>
-          <span className="text-xs font-semibold text-pink-600">
-            {filteredCreators.length} criadores encontrados
-          </span>
+
+          {/* Sort Filters */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+            <span className="text-stone-400 mr-1 hidden sm:inline">Ordenar:</span>
+            <button
+              onClick={() => setSortBy('featured')}
+              className={`rounded-full px-3 py-1 font-bold transition-all ${
+                sortBy === 'featured'
+                  ? 'bg-pink-600 text-white shadow-sm'
+                  : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+              }`}
+            >
+              Em Destaque
+            </button>
+
+            <button
+              onClick={() => setSortBy('top_rated')}
+              className={`rounded-full px-3 py-1 font-bold transition-all flex items-center gap-1 ${
+                sortBy === 'top_rated'
+                  ? 'bg-amber-500 text-white shadow-sm'
+                  : 'bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100'
+              }`}
+            >
+              <Star className="h-3 w-3 fill-amber-400" />
+              <span>Melhor Avaliados ⭐</span>
+            </button>
+
+            <button
+              onClick={() => setSortBy('subscribers')}
+              className={`rounded-full px-3 py-1 font-bold transition-all ${
+                sortBy === 'subscribers'
+                  ? 'bg-pink-600 text-white shadow-sm'
+                  : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+              }`}
+            >
+              Mais VIPs
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredCreators.map((creator) => (
-            <div
-              key={creator.id}
-              className="group overflow-hidden rounded-3xl border border-pink-100 bg-white shadow-sm hover:shadow-lg hover:border-pink-200 transition-all duration-300 flex flex-col justify-between"
-            >
-              {/* Cover Image */}
-              <div className="relative h-28 w-full bg-stone-100 overflow-hidden">
-                <img
-                  src={creator.coverImage}
-                  alt={creator.name}
-                  className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute top-2 right-2 rounded-full bg-black/40 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-md">
-                  {creator.category}
-                </div>
-              </div>
+          {filteredCreators.map((creator) => {
+            const ratingAvg = creator.ratingAverage || 4.9;
+            const ratingCount = creator.ratingCount || 140;
 
-              {/* Creator Card Body */}
-              <div className="p-4 pt-0 space-y-3 flex-1 flex flex-col justify-between">
-                <div>
-                  {/* Avatar (overlapping cover) */}
-                  <div className="flex items-end justify-between -mt-8 mb-2">
-                    <div 
-                      onClick={() => onSelectCreator(creator.id)}
-                      className="relative cursor-pointer"
-                    >
-                      <img
-                        src={creator.avatar}
-                        alt={creator.name}
-                        className="h-16 w-16 rounded-full border-4 border-white object-cover ring-2 ring-pink-500/20 shadow-md"
-                      />
-                      {creator.verified && (
-                        <CheckCircle className="absolute bottom-0 right-0 h-5 w-5 fill-pink-600 text-white" />
-                      )}
+            return (
+              <div
+                key={creator.id}
+                className="group overflow-hidden rounded-3xl border border-pink-100 bg-white shadow-sm hover:shadow-lg hover:border-pink-200 transition-all duration-300 flex flex-col justify-between"
+              >
+                {/* Cover Image */}
+                <div className="relative h-28 w-full bg-stone-100 overflow-hidden">
+                  <img
+                    src={creator.coverImage}
+                    alt={creator.name}
+                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-2 right-2 rounded-full bg-black/40 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-md">
+                    {creator.category}
+                  </div>
+
+                  {creator.isLive && (
+                    <div className="absolute top-2 left-2 rounded-full bg-rose-600 px-2 py-0.5 text-[9px] font-black text-white animate-pulse">
+                      🔴 AO VIVO
+                    </div>
+                  )}
+                </div>
+
+                {/* Creator Card Body */}
+                <div className="p-4 pt-0 space-y-3 flex-1 flex flex-col justify-between">
+                  <div>
+                    {/* Avatar (overlapping cover) */}
+                    <div className="flex items-end justify-between -mt-8 mb-2">
+                      <div 
+                        onClick={() => onSelectCreator(creator.id)}
+                        className="relative cursor-pointer"
+                      >
+                        <img
+                          src={creator.avatar}
+                          alt={creator.name}
+                          className="h-16 w-16 rounded-full border-4 border-white object-cover ring-2 ring-pink-500/20 shadow-md"
+                        />
+                        {creator.verified && (
+                          <CheckCircle className="absolute bottom-0 right-0 h-5 w-5 fill-pink-600 text-white" />
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => onOpenSubscribeModal(creator.id)}
+                        className="rounded-full bg-gradient-to-r from-pink-600 to-rose-500 px-4 py-1.5 text-xs font-bold text-white shadow-md shadow-pink-500/20 hover:from-pink-700 hover:to-rose-600 transition-all"
+                      >
+                        {creator.subscriptionPriceMonthly} MT/mês
+                      </button>
                     </div>
 
-                    <button
-                      onClick={() => onOpenSubscribeModal(creator.id)}
-                      className="rounded-full bg-gradient-to-r from-pink-600 to-rose-500 px-4 py-1.5 text-xs font-bold text-white shadow-md shadow-pink-500/20 hover:from-pink-700 hover:to-rose-600 transition-all"
-                    >
-                      {creator.subscriptionPriceMonthly} MT/mês
-                    </button>
+                    {/* Name, Handle and Star Rating Badge */}
+                    <div className="space-y-1">
+                      <div 
+                        onClick={() => onSelectCreator(creator.id)}
+                        className="cursor-pointer group-hover:text-pink-600 transition-colors flex items-center justify-between"
+                      >
+                        <div>
+                          <h3 className="font-display text-sm font-bold text-stone-900">
+                            {creator.name}
+                          </h3>
+                          <p className="text-xs font-medium text-stone-400">
+                            @{creator.username}
+                          </p>
+                        </div>
+
+                        {/* Star Score Pill */}
+                        <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full text-xs font-bold text-amber-900">
+                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          <span>{ratingAvg.toFixed(1)}</span>
+                          <span className="text-[10px] text-stone-400 font-normal">({ratingCount})</span>
+                        </div>
+                      </div>
+
+                      <p className="mt-1 text-xs text-stone-600 line-clamp-2 leading-relaxed">
+                        {creator.bio}
+                      </p>
+
+                      <div className="mt-2 flex items-center justify-between text-[11px] text-stone-400">
+                        <div className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3 text-pink-500" />
+                          <span>{creator.location}</span>
+                        </div>
+                        {creator.liveRatingAverage && (
+                          <span className="text-rose-600 font-semibold">
+                            Lives {creator.liveRatingAverage.toFixed(1)} ★
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Name and Handle */}
-                  <div 
-                    onClick={() => onSelectCreator(creator.id)}
-                    className="cursor-pointer group-hover:text-pink-600 transition-colors"
-                  >
-                    <h3 className="font-display text-sm font-bold text-stone-900">
-                      {creator.name}
-                    </h3>
-                    <p className="text-xs font-medium text-stone-400">
-                      @{creator.username}
-                    </p>
+                  {/* Stats & Actions */}
+                  <div className="border-t border-stone-100 pt-3 flex items-center justify-between text-xs">
+                    <div className="flex gap-3 text-stone-500">
+                      <span>
+                        <strong className="text-stone-900 font-bold">{(creator.followersCount / 1000).toFixed(1)}k</strong> seguidores
+                      </span>
+                      <span>
+                        <strong className="text-stone-900 font-bold">{(creator.subscribersCount / 1000).toFixed(1)}k</strong> VIPs
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {onOpenRateModal && (
+                        <button
+                          onClick={() => onOpenRateModal(creator)}
+                          className="rounded-full border border-amber-300 bg-amber-50 p-1.5 text-amber-700 hover:bg-amber-100"
+                          title="Avaliar Criador"
+                        >
+                          <Star className="h-3 w-3 fill-amber-400" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => onSelectCreator(creator.id)}
+                        className="text-xs font-bold text-pink-600 hover:underline"
+                      >
+                        Ver Perfil →
+                      </button>
+                    </div>
                   </div>
 
-                  <p className="mt-1 text-xs text-stone-600 line-clamp-2 leading-relaxed">
-                    {creator.bio}
-                  </p>
-
-                  <div className="mt-2 flex items-center gap-1 text-[11px] text-stone-400">
-                    <MapPin className="h-3 w-3 text-pink-500" />
-                    <span>{creator.location}</span>
-                  </div>
                 </div>
-
-                {/* Stats & Actions */}
-                <div className="border-t border-stone-100 pt-3 flex items-center justify-between text-xs">
-                  <div className="flex gap-3 text-stone-500">
-                    <span>
-                      <strong className="text-stone-900 font-bold">{(creator.followersCount / 1000).toFixed(1)}k</strong> seguidores
-                    </span>
-                    <span>
-                      <strong className="text-stone-900 font-bold">{(creator.subscribersCount / 1000).toFixed(1)}k</strong> VIPs
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => onSelectCreator(creator.id)}
-                    className="text-xs font-bold text-pink-600 hover:underline"
-                  >
-                    Ver Perfil →
-                  </button>
-                </div>
-
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

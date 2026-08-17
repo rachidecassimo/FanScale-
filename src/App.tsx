@@ -12,6 +12,7 @@ import {
 } from './data/mockData';
 import { 
   UserRole, 
+  AuthUser,
   Post, 
   Story, 
   CreatorProfile, 
@@ -35,6 +36,7 @@ import { MessagesView } from './components/MessagesView';
 import { NotificationsView } from './components/NotificationsView';
 import { AdminDashboard } from './components/AdminDashboard';
 import { LandingView } from './components/LandingView';
+import { LoginView } from './components/LoginView';
 import { StoryViewerModal } from './components/StoryViewerModal';
 import { SubscriptionModal } from './components/SubscriptionModal';
 import { PaymentPromptModal } from './components/PaymentPromptModal';
@@ -43,6 +45,30 @@ import { CreatePostModal } from './components/CreatePostModal';
 import { KycModal } from './components/KycModal';
 
 export default function App() {
+  // Authentication & Current User State
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>({
+    id: 'u_fan_1',
+    name: 'Carlos Tembe',
+    username: 'carlos.vip',
+    email: 'carlos@gmail.com',
+    phone: '+258 86 555 1234',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80',
+    role: 'fan',
+    verified: false,
+    walletBalanceMT: 2500,
+    bio: 'Amante de música marrabenta e lifestyle moçambicano 🇲🇿',
+    location: 'Maputo'
+  });
+  const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
+  const [loginModalMode, setLoginModalMode] = useState<'login' | 'register'>('login');
+  const [loginModalRole, setLoginModalRole] = useState<UserRole>('fan');
+
+  const handleOpenAuth = (mode: 'login' | 'register' = 'login', role: UserRole = 'fan') => {
+    setLoginModalMode(mode);
+    setLoginModalRole(role);
+    setShowLoginModal(true);
+  };
+
   // Navigation & Role State
   const [userRole, setUserRole] = useState<UserRole>('fan');
   const [currentTab, setCurrentTab] = useState<string>('feed');
@@ -92,6 +118,31 @@ export default function App() {
   // Helper count badges
   const unreadNotificationsCount = notifications.filter((n) => !n.read).length;
   const unreadMessagesCount = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
+
+  // Authentication Handlers
+  const handleLoginSuccess = (user: AuthUser) => {
+    setCurrentUser(user);
+    setUserRole(user.role);
+    setWalletBalanceMT(user.walletBalanceMT);
+    setShowLoginModal(false);
+    if (user.role === 'creator') {
+      setSelectedCreatorId(user.id.startsWith('c') ? user.id : 'c1');
+      setCurrentTab('studio');
+    } else if (user.role === 'admin') {
+      setCurrentTab('admin');
+    } else {
+      setCurrentTab('feed');
+    }
+    setIsLandingPage(false);
+    confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
+    showToast(`Bem-vindo, ${user.name}! Sessão iniciada com sucesso.`);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    showToast('Sessão terminada. Até breve!');
+    setIsLandingPage(true);
+  };
 
   // Current logged in creator view (for studio/profile when role is creator)
   const currentCreatorProfile = creators.find((c) => c.id === selectedCreatorId) || creators[0];
@@ -536,7 +587,12 @@ export default function App() {
     const newKyc: KycRequest = {
       id: `kyc-${Date.now()}`,
       creatorId: 'user-me',
-      creatorName: data.fullName,
+      creatorName: data.publicName || data.fullName,
+      legalFullName: data.fullName,
+      dateOfBirth: data.dateOfBirth || '2001-01-01',
+      age: 23,
+      isOver18Confirmed: true,
+      participantConsentConfirmed: true,
       creatorHandle: 'eu_criador',
       creatorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
       idDocumentType: data.docType,
@@ -548,7 +604,7 @@ export default function App() {
       payoutMethod: data.payoutMethod,
     };
     setKycRequests((prev) => [newKyc, ...prev]);
-    showToast('Documentos enviados para conformidade FanScale.');
+    showToast('Documentos 18+ e KYC enviados para conformidade FanScale.');
   };
 
   return (
@@ -595,6 +651,10 @@ export default function App() {
             setIsLandingPage(false);
           }
         }}
+        currentUser={currentUser}
+        onOpenLogin={() => handleOpenAuth('login')}
+        onOpenRegister={() => handleOpenAuth('register')}
+        onLogout={handleLogout}
       />
 
       {/* Main App Content Viewport */}
@@ -608,13 +668,23 @@ export default function App() {
               setCurrentTab('explore');
             }}
             onBecomeCreator={() => {
-              setIsLandingPage(false);
-              setUserRole('creator');
-              setCurrentTab('studio');
+              handleOpenAuth('register', 'creator');
             }}
+            onOpenLogin={() => handleOpenAuth('login')}
+            onOpenRegister={() => handleOpenAuth('register')}
           />
         ) : (
           <>
+            {/* 0. Dedicated Login Tab */}
+            {currentTab === 'login' && (
+              <LoginView
+                initialMode={loginModalMode}
+                initialRole={loginModalRole}
+                onLoginSuccess={handleLoginSuccess}
+                onClose={() => setCurrentTab('feed')}
+              />
+            )}
+
             {/* 1. Feed Tab */}
             {currentTab === 'feed' && (
               <Feed
@@ -841,6 +911,19 @@ export default function App() {
           }}
           onCancel={() => setPaymentPrompt(null)}
         />
+      )}
+
+      {/* Login & Register Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+          <LoginView
+            isModal={true}
+            initialMode={loginModalMode}
+            initialRole={loginModalRole}
+            onLoginSuccess={handleLoginSuccess}
+            onClose={() => setShowLoginModal(false)}
+          />
+        </div>
       )}
 
     </div>

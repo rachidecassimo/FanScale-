@@ -1,4 +1,15 @@
-import { CreatorProfile, Post, Story, NotificationItem, Conversation, WalletTransaction, AdminReport, KycRequest } from '../types';
+import { 
+  CreatorProfile, 
+  Post, 
+  Story, 
+  NotificationItem, 
+  Conversation, 
+  WalletTransaction, 
+  AdminReport, 
+  KycRequest,
+  CreatorReview,
+  LiveSession
+} from '../types';
 
 export const INITIAL_CREATORS: CreatorProfile[] = [
   {
@@ -17,6 +28,20 @@ export const INITIAL_CREATORS: CreatorProfile[] = [
     likesTotal: 89400,
     subscriptionPriceMonthly: 499,
     subscriptionPriceQuarterly: 1290,
+    ratingAverage: 4.9,
+    ratingCount: 384,
+    ratingBreakdown: {
+      5: 342,
+      4: 32,
+      3: 7,
+      2: 2,
+      1: 1
+    },
+    liveRatingAverage: 4.95,
+    liveRatingCount: 126,
+    isLive: true,
+    liveViewersCount: 340,
+    liveTicketPriceMT: 150,
     socialLinks: {
       instagram: 'ana_chissano',
       tiktok: 'ana.moz',
@@ -42,6 +67,18 @@ export const INITIAL_CREATORS: CreatorProfile[] = [
     likesTotal: 45200,
     subscriptionPriceMonthly: 350,
     subscriptionPriceQuarterly: 900,
+    ratingAverage: 4.8,
+    ratingCount: 215,
+    ratingBreakdown: {
+      5: 180,
+      4: 25,
+      3: 8,
+      2: 1,
+      1: 1
+    },
+    liveRatingAverage: 4.85,
+    liveRatingCount: 89,
+    isLive: false,
     socialLinks: {
       instagram: 'dino_fitmz',
       tiktok: 'dino.treinos'
@@ -66,6 +103,20 @@ export const INITIAL_CREATORS: CreatorProfile[] = [
     likesTotal: 142000,
     subscriptionPriceMonthly: 600,
     subscriptionPriceQuarterly: 1550,
+    ratingAverage: 5.0,
+    ratingCount: 512,
+    ratingBreakdown: {
+      5: 498,
+      4: 12,
+      3: 2,
+      2: 0,
+      1: 0
+    },
+    liveRatingAverage: 5.0,
+    liveRatingCount: 245,
+    isLive: true,
+    liveViewersCount: 820,
+    liveTicketPriceMT: 200,
     socialLinks: {
       instagram: 'yaracossa_music',
       youtube: 'yaracossaofficial'
@@ -90,6 +141,17 @@ export const INITIAL_CREATORS: CreatorProfile[] = [
     likesTotal: 98000,
     subscriptionPriceMonthly: 250,
     subscriptionPriceQuarterly: 650,
+    ratingAverage: 4.7,
+    ratingCount: 298,
+    ratingBreakdown: {
+      5: 230,
+      4: 52,
+      3: 12,
+      2: 3,
+      1: 1
+    },
+    liveRatingAverage: 4.75,
+    liveRatingCount: 110,
     isSubscribed: false,
     isFollowing: true
   },
@@ -109,6 +171,17 @@ export const INITIAL_CREATORS: CreatorProfile[] = [
     likesTotal: 62400,
     subscriptionPriceMonthly: 450,
     subscriptionPriceQuarterly: 1150,
+    ratingAverage: 4.9,
+    ratingCount: 176,
+    ratingBreakdown: {
+      5: 155,
+      4: 18,
+      3: 3,
+      2: 0,
+      1: 0
+    },
+    liveRatingAverage: 4.9,
+    liveRatingCount: 65,
     isSubscribed: false,
     isFollowing: false
   },
@@ -128,6 +201,17 @@ export const INITIAL_CREATORS: CreatorProfile[] = [
     likesTotal: 34100,
     subscriptionPriceMonthly: 300,
     subscriptionPriceQuarterly: 790,
+    ratingAverage: 4.85,
+    ratingCount: 142,
+    ratingBreakdown: {
+      5: 124,
+      4: 15,
+      3: 2,
+      2: 1,
+      1: 0
+    },
+    liveRatingAverage: 4.88,
+    liveRatingCount: 52,
     isSubscribed: false,
     isFollowing: false
   }
@@ -633,6 +717,11 @@ export const INITIAL_KYC_REQUESTS: KycRequest[] = [
     id: 'kyc1',
     creatorId: 'c1',
     creatorName: 'Ana Chissano',
+    legalFullName: 'Ana Paula Chissano Mabunda',
+    dateOfBirth: '1998-04-12',
+    age: 28,
+    isOver18Confirmed: true,
+    participantConsentConfirmed: true,
     creatorHandle: 'ana.moz',
     creatorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
     idDocumentType: 'BI',
@@ -647,6 +736,11 @@ export const INITIAL_KYC_REQUESTS: KycRequest[] = [
     id: 'kyc2',
     creatorId: 'c3',
     creatorName: 'Yara Cossa',
+    legalFullName: 'Yara Esperança Cossa',
+    dateOfBirth: '1996-08-20',
+    age: 30,
+    isOver18Confirmed: true,
+    participantConsentConfirmed: true,
     creatorHandle: 'yara.cossa.music',
     creatorAvatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80',
     idDocumentType: 'Passaporte',
@@ -661,6 +755,11 @@ export const INITIAL_KYC_REQUESTS: KycRequest[] = [
     id: 'kyc3',
     creatorId: 'c6',
     creatorName: 'Tânia Mondlane',
+    legalFullName: 'Tânia Sandra Mondlane',
+    dateOfBirth: '2001-11-05',
+    age: 24,
+    isOver18Confirmed: true,
+    participantConsentConfirmed: true,
     creatorHandle: 'tania_gastronomiamz',
     creatorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80',
     idDocumentType: 'BI',
@@ -699,6 +798,220 @@ export const CREATOR_ANALYTICS_DATA = [
   { name: 'Dom', receita: 5400, subscritores: 40, ppv: 2100, gorjetas: 1250 },
 ];
 
+export const INITIAL_REVIEWS: CreatorReview[] = [
+  {
+    id: 'rev-1',
+    creatorId: 'c1',
+    userId: 'u_fan_1',
+    userName: 'Carlos Tembe',
+    userHandle: 'carlos.vip',
+    userAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+    userBadge: 'Subscritor VIP 👑',
+    rating: 5,
+    categories: {
+      contentQuality: 5,
+      interaction: 5,
+      livePerformance: 5
+    },
+    title: 'A melhor criadora de Maputo!',
+    comment: 'Os conteúdos exclusivos valem cada metical! As transmissões ao vivo são super íntimas, com ótima imagem e ela responde a todos no chat.',
+    createdAt: 'Há 2 dias',
+    likesCount: 24,
+    isLiked: false,
+    isVerifiedSubscriber: true,
+    liveId: 'live-1',
+    liveTitle: 'Live VIP Bastidores Exclusivos Maputo',
+    tags: ['Lives Incríveis 🔥', 'Responde Rápido 💬', 'Qualidade HD 🎥', 'Vale Cada Metical 🇲🇿']
+  },
+  {
+    id: 'rev-2',
+    creatorId: 'c1',
+    userId: 'u_fan_2',
+    userName: 'Marta Guambe',
+    userHandle: 'marta_g',
+    userAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
+    userBadge: 'Top Fan 🌟',
+    rating: 5,
+    categories: {
+      contentQuality: 5,
+      interaction: 4,
+      livePerformance: 5
+    },
+    title: 'Produção incrível e muita simpatia',
+    comment: 'Adoro as sessões de fotos e dicas de moda. A live acústica de sexta-feira passada foi mágica!',
+    createdAt: 'Há 5 dias',
+    likesCount: 16,
+    isLiked: true,
+    isVerifiedSubscriber: true,
+    liveId: 'live-1',
+    liveTitle: 'Live VIP Bastidores Exclusivos Maputo',
+    tags: ['Super Carismática ✨', 'Lives Incríveis 🔥']
+  },
+  {
+    id: 'rev-3',
+    creatorId: 'c1',
+    userId: 'u_fan_3',
+    userName: 'Filipe Nhantumbo',
+    userHandle: 'filipe_nh',
+    userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    userBadge: 'Subscritor VIP 👑',
+    rating: 4,
+    categories: {
+      contentQuality: 5,
+      interaction: 4,
+      livePerformance: 4
+    },
+    title: 'Excelente conteúdo, muito consistente',
+    comment: 'Subscrevi há 3 meses e não me arrependo. Fotos impecáveis com toque da nossa terra.',
+    createdAt: 'Há 1 semana',
+    likesCount: 8,
+    isLiked: false,
+    isVerifiedSubscriber: true,
+    tags: ['Conteúdo Consistente 📸', 'Recomendo 🇲🇿']
+  },
+  {
+    id: 'rev-4',
+    creatorId: 'c3',
+    userId: 'u_fan_4',
+    userName: 'Nelson Sitoe',
+    userHandle: 'nelson_sitoe',
+    userAvatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80',
+    userBadge: 'Subscritor VIP 👑',
+    rating: 5,
+    categories: {
+      contentQuality: 5,
+      interaction: 5,
+      livePerformance: 5
+    },
+    title: 'Voz inconfundível e lives emocionantes',
+    comment: 'A live de pré-estreia acústica foi uma das melhores experiências que tive online. Yara é uma estrela moçambicana!',
+    createdAt: 'Há 3 dias',
+    likesCount: 42,
+    isLiked: true,
+    isVerifiedSubscriber: true,
+    liveId: 'live-2',
+    liveTitle: 'Sessão Acústica Ao Vivo: Marrabenta & Soul',
+    tags: ['Lives Incríveis 🔥', 'Voz Espetacular 🎵', 'Vale Cada Metical 🇲🇿']
+  },
+  {
+    id: 'rev-5',
+    creatorId: 'c2',
+    userId: 'u_fan_5',
+    userName: 'Ivone Manhiça',
+    userHandle: 'ivone_fit',
+    userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    userBadge: 'Aluna VIP 💪',
+    rating: 5,
+    categories: {
+      contentQuality: 5,
+      interaction: 5,
+      livePerformance: 4
+    },
+    title: 'Treinos práticos e resultados rápidos',
+    comment: 'O Dino explica os exercícios com muita clareza e as lives de treino matinal dão toda a energia!',
+    createdAt: 'Há 4 dias',
+    likesCount: 19,
+    isLiked: false,
+    isVerifiedSubscriber: true,
+    liveId: 'live-3',
+    liveTitle: 'Treino Matinal Queima Gordura em Casa',
+    tags: ['Resultados Reais 💪', 'Pontual ⏰', 'Super Motivação 🔥']
+  },
+  {
+    id: 'rev-6',
+    creatorId: 'c4',
+    userId: 'u_fan_6',
+    userName: 'Lucas Cumbana',
+    userHandle: 'lucas_c',
+    userAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    userBadge: 'Fã Frequente 😂',
+    rating: 5,
+    categories: {
+      contentQuality: 5,
+      interaction: 4,
+      livePerformance: 5
+    },
+    title: 'Rir do início ao fim',
+    comment: 'As lives de stand-up improvisado são hilariantes. O homem não tem filtro nenhum!',
+    createdAt: 'Há 1 semana',
+    likesCount: 31,
+    isLiked: false,
+    isVerifiedSubscriber: true,
+    liveId: 'live-4',
+    liveTitle: 'Stand-up Exclusivo: Histórias de Nampula',
+    tags: ['Muito Engraçado 😂', 'Super Espontâneo 🎭']
+  }
+];
+
+export const INITIAL_LIVE_SESSIONS: LiveSession[] = [
+  {
+    id: 'live-1',
+    creatorId: 'c1',
+    creatorName: 'Ana Chissano',
+    creatorUsername: 'ana.moz',
+    creatorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+    title: 'Live VIP: Bastidores Exclusivos e Q&A Privado 🔴',
+    category: 'Lifestyle',
+    coverImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&auto=format&fit=crop&q=80',
+    isLive: true,
+    viewersCount: 342,
+    ticketPriceMT: 150,
+    ratingAverage: 4.95,
+    ratingCount: 126,
+    description: 'Sessão intimista ao vivo para conversar, responder perguntas especiais e mostrar o ensaio fotográfico de Maputo.'
+  },
+  {
+    id: 'live-2',
+    creatorId: 'c3',
+    creatorName: 'Yara Cossa',
+    creatorUsername: 'yara.cossa.music',
+    creatorAvatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80',
+    title: 'Sessão Acústica Ao Vivo: Marrabenta & Soul 🎵',
+    category: 'Música',
+    coverImage: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200&auto=format&fit=crop&q=80',
+    isLive: true,
+    viewersCount: 820,
+    ticketPriceMT: 200,
+    ratingAverage: 5.0,
+    ratingCount: 245,
+    description: 'Concerto acústico direto do estúdio com músicas inéditas e pedidos de canções em direto.'
+  },
+  {
+    id: 'live-3',
+    creatorId: 'c2',
+    creatorName: 'Dino Macuácua',
+    creatorUsername: 'dino_fitness_mz',
+    creatorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80',
+    title: 'Treino Matinal Queima Gordura em Casa 💪',
+    category: 'Fitness',
+    coverImage: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=1200&auto=format&fit=crop&q=80',
+    isLive: false,
+    viewersCount: 0,
+    ticketPriceMT: 100,
+    ratingAverage: 4.85,
+    ratingCount: 89,
+    scheduledTime: 'Amanhã às 06:30',
+    description: 'Sessão intensa de 45 minutos sem equipamentos, com orientações de postura em tempo real.'
+  },
+  {
+    id: 'live-4',
+    creatorId: 'c4',
+    creatorName: 'Edson Mabote',
+    creatorUsername: 'edson_humor',
+    creatorAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80',
+    title: 'Stand-up Exclusivo: Histórias de Nampula 😂',
+    category: 'Humor',
+    coverImage: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&auto=format&fit=crop&q=80',
+    isLive: false,
+    viewersCount: 0,
+    ticketPriceMT: 150,
+    ratingAverage: 4.75,
+    ratingCount: 110,
+    scheduledTime: 'Sexta-feira às 21:00',
+    description: 'Comédia sem filtros sobre relacionamentos, transportes em Moçambique e a vida de solteiro.'
+  }
+];
+
 export const MOCK_CREATORS = INITIAL_CREATORS;
 export const MOCK_POSTS = INITIAL_POSTS;
 export const MOCK_STORIES = INITIAL_STORIES;
@@ -707,4 +1020,7 @@ export const MOCK_NOTIFICATIONS = INITIAL_NOTIFICATIONS;
 export const MOCK_WALLET_TRANSACTIONS = INITIAL_TRANSACTIONS;
 export const MOCK_ADMIN_REPORTS = INITIAL_ADMIN_REPORTS;
 export const MOCK_KYC_REQUESTS = INITIAL_KYC_REQUESTS;
+export const MOCK_REVIEWS = INITIAL_REVIEWS;
+export const MOCK_LIVE_SESSIONS = INITIAL_LIVE_SESSIONS;
+
 

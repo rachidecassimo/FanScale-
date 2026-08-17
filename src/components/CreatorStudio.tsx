@@ -15,7 +15,11 @@ import {
   Eye, 
   Heart,
   BarChart3,
-  Bot
+  Bot,
+  Star,
+  Radio,
+  ThumbsUp,
+  Award
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -27,11 +31,12 @@ import {
   CartesianGrid 
 } from 'recharts';
 import { CREATOR_ANALYTICS_DATA } from '../data/mockData';
-import { CreatorProfile, Post } from '../types';
+import { CreatorProfile, Post, CreatorReview } from '../types';
 
 interface CreatorStudioProps {
   creator: CreatorProfile;
   posts: Post[];
+  reviews?: CreatorReview[];
   onOpenCreateModal: () => void;
   onRequestPayout: (amountMT: number, method: string, phoneOrIban: string) => void;
   onUpdatePricing: (monthlyMT: number, quarterlyMT: number) => void;
@@ -40,15 +45,17 @@ interface CreatorStudioProps {
 export const CreatorStudio: React.FC<CreatorStudioProps> = ({
   creator,
   posts,
+  reviews = [],
   onOpenCreateModal,
   onRequestPayout,
   onUpdatePricing,
 }) => {
-  const [activeStudioTab, setActiveStudioTab] = useState<'overview' | 'content' | 'pricing' | 'ai_assistant'>('overview');
+  const [activeStudioTab, setActiveStudioTab] = useState<'overview' | 'content' | 'pricing' | 'reviews' | 'affiliates' | 'ai_assistant'>('overview');
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState('15000');
   const [payoutMethod, setPayoutMethod] = useState<'mpesa' | 'emola' | 'bank'>('mpesa');
   const [payoutPhone, setPayoutPhone] = useState('849998888');
+  const [copiedAffiliate, setCopiedAffiliate] = useState(false);
   
   // Pricing states
   const [monthlyPrice, setMonthlyPrice] = useState(creator.subscriptionPriceMonthly.toString());
@@ -67,6 +74,16 @@ export const CreatorStudio: React.FC<CreatorStudioProps> = ({
   const totalEarningsMT = 142600;
   const subscribersCount = creator?.subscribersCount ?? 2450;
   const newSubscribersThisMonth = 184;
+
+  const creatorReviews = reviews.filter((r) => r.creatorId === creator.id);
+  const ratingAvg = creator.ratingAverage || 4.9;
+  const ratingCount = creator.ratingCount || 150;
+
+  const handleCopyAffiliate = () => {
+    navigator.clipboard?.writeText(`https://fanscale.com/@${creator.username}?ref=${creator.id}`);
+    setCopiedAffiliate(true);
+    setTimeout(() => setCopiedAffiliate(false), 2500);
+  };
 
   const handlePayoutSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,6 +229,18 @@ export const CreatorStudio: React.FC<CreatorStudioProps> = ({
         </button>
 
         <button
+          onClick={() => setActiveStudioTab('reviews')}
+          className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all ${
+            activeStudioTab === 'reviews'
+              ? 'bg-amber-500 text-white shadow-md'
+              : 'text-stone-600 hover:bg-amber-50 hover:text-amber-700'
+          }`}
+        >
+          <Star className={`h-4 w-4 ${activeStudioTab === 'reviews' ? 'fill-white' : 'fill-amber-400 text-amber-400'}`} />
+          <span>Reputação & Avaliações ({creatorReviews.length || ratingCount})</span>
+        </button>
+
+        <button
           onClick={() => setActiveStudioTab('pricing')}
           className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all ${
             activeStudioTab === 'pricing'
@@ -232,7 +261,19 @@ export const CreatorStudio: React.FC<CreatorStudioProps> = ({
           }`}
         >
           <Lock className="h-4 w-4" />
-          <span>Gestão de Conteúdos</span>
+          <span>Gestão de Conteúdos & DRM</span>
+        </button>
+
+        <button
+          onClick={() => setActiveStudioTab('affiliates')}
+          className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all ${
+            activeStudioTab === 'affiliates'
+              ? 'bg-pink-600 text-white shadow-md shadow-pink-500/20'
+              : 'text-stone-600 hover:bg-pink-50 hover:text-pink-700'
+          }`}
+        >
+          <Sparkles className="h-4 w-4 text-amber-300" />
+          <span>Programa de Afiliados</span>
         </button>
 
         <button
@@ -247,6 +288,103 @@ export const CreatorStudio: React.FC<CreatorStudioProps> = ({
           <span>FanScale AI Assistant</span>
         </button>
       </div>
+
+      {/* Tab: Reviews & Feedback */}
+      {activeStudioTab === 'reviews' && (
+        <div className="space-y-6">
+          <div className="rounded-3xl border border-amber-200 bg-amber-50/50 p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-amber-600" />
+                  <h3 className="font-display text-lg font-bold text-amber-950">
+                    Classificação & Reputação do Criador
+                  </h3>
+                </div>
+                <p className="text-xs text-amber-900/80 max-w-xl">
+                  Criadores com média superior a 4.8 estrelas recebem maior destaque no Explorar e selo de Criador Verificado 👑.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="rounded-2xl bg-white p-3 border border-amber-200 text-center shadow-sm">
+                  <span className="font-display text-2xl font-black text-amber-600 block">
+                    {ratingAvg.toFixed(1)} ★
+                  </span>
+                  <span className="text-[10px] text-stone-500 font-bold">Nota Geral</span>
+                </div>
+
+                <div className="rounded-2xl bg-white p-3 border border-rose-200 text-center shadow-sm">
+                  <span className="font-display text-2xl font-black text-rose-600 block">
+                    {creator.liveRatingAverage ? `${creator.liveRatingAverage.toFixed(1)} ★` : '5.0 ★'}
+                  </span>
+                  <span className="text-[10px] text-stone-500 font-bold">Nota das Lives 🔴</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Feedback Feed */}
+          <div className="space-y-4">
+            <h4 className="font-display text-sm font-bold text-stone-900">
+              Comentários e Críticas Recentes dos Teus Fãs ({creatorReviews.length})
+            </h4>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {creatorReviews.map((rev) => (
+                <div
+                  key={rev.id}
+                  className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm space-y-2.5"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <img
+                        src={rev.userAvatar}
+                        alt={rev.userName}
+                        className="h-8 w-8 rounded-full object-cover"
+                      />
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-stone-900">{rev.userName}</span>
+                          {rev.userBadge && (
+                            <span className="text-[9px] font-bold text-pink-600 bg-pink-50 px-1.5 py-0.2 rounded-full">
+                              {rev.userBadge}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-stone-400">@{rev.userHandle} · {rev.createdAt}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <span>{rev.rating}.0</span>
+                    </div>
+                  </div>
+
+                  {rev.liveTitle && (
+                    <div className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                      <Radio className="h-2.5 w-2.5" />
+                      <span>Live: {rev.liveTitle}</span>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-stone-700 leading-relaxed">
+                    "{rev.comment}"
+                  </p>
+
+                  <div className="flex items-center justify-between text-[11px] text-stone-400 pt-2 border-t border-stone-100">
+                    <span className="flex items-center gap-1">
+                      <ThumbsUp className="h-3 w-3 text-pink-600" /> {rev.likesCount} acharam útil
+                    </span>
+                    <span className="text-emerald-600 font-semibold">Fã Ativo M-Pesa ✓</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tab: Overview / Revenue Analytics */}
       {activeStudioTab === 'overview' && (
@@ -562,6 +700,71 @@ export const CreatorStudio: React.FC<CreatorStudioProps> = ({
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Tab: Affiliates & Referrals */}
+      {activeStudioTab === 'affiliates' && (
+        <div className="max-w-4xl mx-auto space-y-6">
+          
+          {/* Affiliate Header Card */}
+          <div className="rounded-3xl bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 p-6 sm:p-8 text-white border border-stone-700 shadow-xl space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-amber-400/20 px-3 py-1 text-xs font-bold text-amber-300 border border-amber-400/30">
+                ✨ Programa de Afiliados FanScale Moçambique
+              </span>
+            </div>
+            
+            <h3 className="font-display text-xl sm:text-2xl font-bold text-white">
+              Ganha 5% de Comissão Vitalícia por cada novo Criador ou Fã que convidares!
+            </h3>
+            
+            <p className="text-xs sm:text-sm text-stone-300 max-w-2xl leading-relaxed">
+              Partilha o teu link único nas tuas redes (Instagram, Twitter/X, TikTok, WhatsApp). Sempre que alguém se registar e subscrever ou publicar, tu recebes comissões automáticas diretamente na tua carteira.
+            </p>
+
+            {/* Referral Link Box */}
+            <div className="space-y-2 pt-2">
+              <label className="block text-xs font-bold text-stone-300">
+                O Teu Link Único de Afiliado FanScale
+              </label>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div className="flex-1 rounded-2xl bg-black/40 border border-stone-700 px-4 py-3 text-xs font-mono font-bold text-pink-400 select-all overflow-x-auto">
+                  https://fanscale.com/@{creator.username}?ref={creator.id}
+                </div>
+                <button
+                  id="creator-copy-affiliate-link"
+                  onClick={handleCopyAffiliate}
+                  className="rounded-2xl bg-pink-600 px-6 py-3 text-xs font-bold text-white hover:bg-pink-500 transition-all flex items-center justify-center gap-2 shrink-0 shadow-lg shadow-pink-600/30"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span>{copiedAffiliate ? 'Copiado!' : 'Copiar Link de Convite'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Affiliate Metrics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="rounded-3xl border border-pink-100 bg-white p-5 shadow-sm space-y-1">
+              <span className="text-xs font-medium text-stone-500">Cliques no Teu Link</span>
+              <div className="font-display text-2xl font-black text-stone-900">1.842</div>
+              <span className="text-[10px] text-emerald-600 font-bold">+18% esta semana</span>
+            </div>
+
+            <div className="rounded-3xl border border-pink-100 bg-white p-5 shadow-sm space-y-1">
+              <span className="text-xs font-medium text-stone-500">Registos Convertidos</span>
+              <div className="font-display text-2xl font-black text-pink-600">64 criadores / fãs</div>
+              <span className="text-[10px] text-stone-400">Taxa de conversão: 3.5%</span>
+            </div>
+
+            <div className="rounded-3xl border border-pink-100 bg-white p-5 shadow-sm space-y-1">
+              <span className="text-xs font-medium text-stone-500">Comissões Acumuladas</span>
+              <div className="font-display text-2xl font-black text-emerald-600">4.320 MT</div>
+              <span className="text-[10px] text-emerald-600 font-bold">Disponível p/ levantamento M-Pesa</span>
+            </div>
+          </div>
+
         </div>
       )}
 

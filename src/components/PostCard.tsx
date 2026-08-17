@@ -169,35 +169,65 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
       </div>
 
-      {/* Media Box (With Blur Protection if Locked) */}
-      <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] bg-stone-100 overflow-hidden">
+      {/* Media Box (With DRM Watermark, Context Menu Lock & Blur Protection if Locked) */}
+      <div 
+        onContextMenu={(e) => e.preventDefault()}
+        className="relative w-full aspect-[4/3] sm:aspect-[16/10] bg-stone-950 overflow-hidden select-none group/media"
+      >
         {post.mediaUrls.map((url, idx) => (
           <img
             key={idx}
             src={url}
             alt={post.caption}
-            className={`h-full w-full object-cover transition-all duration-300 ${
+            draggable={false}
+            className={`h-full w-full object-cover transition-all duration-300 pointer-events-none ${
               isLocked ? 'blur-2xl scale-110 brightness-75' : ''
             }`}
           />
         ))}
 
+        {/* Dynamic DRM Watermark (Anti-Leak & Screen Recording Deterrent) */}
+        {!isLocked && (
+          <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-3 opacity-40 hover:opacity-75 transition-opacity">
+            <div className="flex justify-between items-center text-[9px] font-mono font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] tracking-wider">
+              <span className="bg-black/30 backdrop-blur-sm px-2 py-0.5 rounded">
+                FanScale • 18+ Protegido
+              </span>
+              <span className="bg-black/30 backdrop-blur-sm px-2 py-0.5 rounded">
+                @{post.creator.username}
+              </span>
+            </div>
+            <div className="flex justify-between items-center text-[9px] font-mono text-white/70 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              <span className="bg-black/20 px-1.5 py-0.5 rounded">
+                DRM Token #{post.id.slice(0, 6)}
+              </span>
+              <span className="bg-black/20 px-1.5 py-0.5 rounded">
+                Moçambique 🇲🇿
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Locked Overlay for Subscribers / PPV */}
         {isLocked && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/40 backdrop-blur-md text-white">
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/55 backdrop-blur-md text-white">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-pink-600 to-rose-500 shadow-xl shadow-pink-500/30 mb-3 animate-pulse-subtle">
               <Lock className="h-7 w-7 text-white" />
             </div>
 
+            <div className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-bold text-pink-300 mb-1 border border-pink-500/30">
+              <span>Conteúdo Adulto Exclusivo 18+</span>
+            </div>
+
             <h3 className="font-display text-base sm:text-lg font-bold text-white mb-1">
               {post.visibility === 'ppv' 
-                ? 'Conteúdo Pago Individual' 
+                ? 'Conteúdo Pago Individual (PPV)' 
                 : 'Conteúdo Exclusivo para Subscritores'}
             </h3>
 
             <p className="text-xs text-white/80 max-w-sm mb-4">
               {post.visibility === 'ppv'
-                ? `Desbloqueia esta publicação por apenas ${post.priceMT} MT com M-Pesa, e-Mola ou a tua Carteira FanScale.`
+                ? `Desbloqueia esta publicação privada por apenas ${post.priceMT} MT com M-Pesa, e-Mola ou a tua Carteira FanScale.`
                 : `Junta-te aos subscritores VIP de @${post.creator.username} por ${post.creator.subscriptionPriceMonthly} MT/mês e desbloqueia todas as publicações privadas.`}
             </p>
 
@@ -207,7 +237,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                 className="flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-600 to-rose-500 px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-pink-500/30 hover:from-pink-700 hover:to-rose-600 transition-all hover:scale-105 active:scale-95"
               >
                 <Sparkles className="h-4 w-4" />
-                <span>Desbloquear por {post.priceMT} MT</span>
+                <span>Desbloquear Conteúdo ({post.priceMT} MT)</span>
               </button>
             ) : (
               <button

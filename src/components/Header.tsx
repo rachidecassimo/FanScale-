@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Flame, 
   Search, 
@@ -12,9 +12,12 @@ import {
   LayoutDashboard, 
   ShieldCheck, 
   Globe, 
-  ChevronDown
+  ChevronDown,
+  LogOut,
+  User as UserIcon,
+  LogIn
 } from 'lucide-react';
-import { UserRole } from '../types';
+import { UserRole, AuthUser } from '../types';
 
 interface HeaderProps {
   currentTab: string;
@@ -31,6 +34,10 @@ interface HeaderProps {
   onOpenKycModal: () => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  currentUser?: AuthUser | null;
+  onOpenLogin: () => void;
+  onOpenRegister?: () => void;
+  onLogout: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -40,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
   onRoleChange,
   isLandingPage,
   onToggleLandingPage,
-  walletBalanceMT,
+  walletBalanceMT = 0,
   unreadNotificationsCount,
   unreadMessagesCount,
   onOpenCreateModal,
@@ -48,9 +55,14 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenKycModal,
   searchQuery,
   onSearchChange,
+  currentUser,
+  onOpenLogin,
+  onOpenRegister,
+  onLogout,
 }) => {
-  const [showRoleMenu, setShowRoleMenu] = React.useState(false);
-  const [isSearchFocused, setIsSearchFocused] = React.useState(false);
+  const [showRoleMenu, setShowRoleMenu] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-pink-100 bg-white/90 backdrop-blur-md transition-all">
@@ -167,6 +179,19 @@ export const Header: React.FC<HeaderProps> = ({
                   <ShieldCheck className="h-4 w-4 text-pink-600" />
                   <span>Painel Administrativo</span>
                 </button>
+
+                <div className="my-1 border-t border-stone-100" />
+
+                <button
+                  onClick={() => {
+                    onOpenLogin();
+                    setShowRoleMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-pink-600 hover:bg-pink-50 transition-colors"
+                >
+                  <LogIn className="h-4 w-4 text-pink-600" />
+                  <span>Tela de Login & Cadastro</span>
+                </button>
               </div>
             )}
           </div>
@@ -212,19 +237,23 @@ export const Header: React.FC<HeaderProps> = ({
                   onToggleLandingPage(false);
                   onTabChange('explore');
                 }}
-                className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-100 transition-colors"
+                className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-100 transition-colors hidden sm:inline-flex"
               >
                 Explorar Criadores
               </button>
               <button
-                id="landing-enter-app-btn"
-                onClick={() => {
-                  onToggleLandingPage(false);
-                  onTabChange('feed');
-                }}
+                id="landing-login-btn"
+                onClick={onOpenLogin}
+                className="rounded-full border border-pink-500 bg-white px-3.5 py-1.5 text-xs font-bold text-pink-600 hover:bg-pink-50 transition-all"
+              >
+                Entrar
+              </button>
+              <button
+                id="landing-register-btn"
+                onClick={onOpenRegister || onOpenLogin}
                 className="rounded-full bg-gradient-to-r from-pink-600 to-rose-500 px-4 py-2 text-xs font-bold text-white shadow-md shadow-pink-500/20 hover:from-pink-700 hover:to-rose-600 transition-all hover:scale-[1.02]"
               >
-                Entrar na App
+                Criar Conta
               </button>
             </div>
           ) : (
@@ -314,7 +343,7 @@ export const Header: React.FC<HeaderProps> = ({
                 title="Carteira Digital FanScale"
               >
                 <Wallet className="h-4 w-4 text-pink-600" />
-                <span>{walletBalanceMT.toLocaleString('pt-MZ')} MT</span>
+                <span>{(walletBalanceMT ?? 0).toLocaleString('pt-MZ')} MT</span>
               </button>
 
               {/* "Tornar-me Criador" or Creator Studio Button */}
@@ -342,19 +371,131 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
 
-              {/* User Avatar with Profile Link */}
-              <button
-                id="header-profile-btn"
-                onClick={() => onTabChange('profile')}
-                className="group relative flex h-9 w-9 items-center justify-center rounded-full ring-2 ring-pink-500/20 hover:ring-pink-500 transition-all overflow-hidden"
-                title="Meu Perfil"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80"
-                  alt="Meu Perfil"
-                  className="h-full w-full object-cover"
-                />
-              </button>
+              {/* User Avatar & Dropdown Menu */}
+              <div className="relative">
+                <button
+                  id="header-profile-btn"
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="group relative flex h-9 w-9 items-center justify-center rounded-full ring-2 ring-pink-500/20 hover:ring-pink-500 transition-all overflow-hidden focus:outline-none"
+                  title="Menu do Utilizador"
+                >
+                  <img
+                    src={currentUser?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}
+                    alt={currentUser?.name || 'Meu Perfil'}
+                    className="h-full w-full object-cover"
+                  />
+                </button>
+
+                {showUserMenu && (
+                  <div 
+                    id="user-profile-dropdown"
+                    className="absolute right-0 mt-2 w-64 rounded-2xl border border-pink-100 bg-white p-2 shadow-xl shadow-pink-500/10 ring-1 ring-black/5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  >
+                    {/* User Card */}
+                    <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-stone-50 border border-stone-100 mb-1.5">
+                      <img
+                        src={currentUser?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}
+                        alt={currentUser?.name || 'Utilizador'}
+                        className="h-9 w-9 rounded-full object-cover ring-1 ring-pink-500"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-bold text-stone-900 truncate">
+                          {currentUser?.name || 'Carlos Tembe'}
+                        </div>
+                        <div className="text-[11px] text-stone-500 truncate">
+                          @{currentUser?.username || 'carlos.vip'}
+                        </div>
+                      </div>
+                      <span className="rounded-full bg-pink-100 px-2 py-0.5 text-[9px] font-bold text-pink-700 uppercase">
+                        {userRole === 'creator' ? 'Criador' : userRole === 'admin' ? 'Admin' : 'Fã'}
+                      </span>
+                    </div>
+
+                    <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                      Ações Rápidas
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        onTabChange('profile');
+                        setShowUserMenu(false);
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-stone-700 hover:bg-pink-50 hover:text-pink-700 transition-colors"
+                    >
+                      <UserIcon className="h-4 w-4 text-pink-600" />
+                      <span>Meu Perfil</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        onOpenWallet();
+                        setShowUserMenu(false);
+                      }}
+                      className="flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs font-medium text-stone-700 hover:bg-pink-50 hover:text-pink-700 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Wallet className="h-4 w-4 text-pink-600" />
+                        <span>Carteira M-Pesa</span>
+                      </div>
+                      <span className="font-bold text-pink-600 text-[11px]">
+                        {(walletBalanceMT ?? 0).toLocaleString('pt-MZ')} MT
+                      </span>
+                    </button>
+
+                    {userRole === 'creator' && (
+                      <button
+                        onClick={() => {
+                          onTabChange('creator_studio');
+                          setShowUserMenu(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-stone-700 hover:bg-pink-50 hover:text-pink-700 transition-colors"
+                      >
+                        <LayoutDashboard className="h-4 w-4 text-pink-600" />
+                        <span>Creator Studio</span>
+                      </button>
+                    )}
+
+                    <div className="my-1 border-t border-stone-100" />
+
+                    <button
+                      id="menu-switch-account-btn"
+                      onClick={() => {
+                        onOpenLogin();
+                        setShowUserMenu(false);
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-stone-700 hover:bg-stone-50 transition-colors"
+                    >
+                      <LogIn className="h-4 w-4 text-stone-500" />
+                      <span>Mudar de Conta / Login</span>
+                    </button>
+
+                    <button
+                      id="menu-register-account-btn"
+                      onClick={() => {
+                        if (onOpenRegister) onOpenRegister();
+                        else onOpenLogin();
+                        setShowUserMenu(false);
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-pink-600 hover:bg-pink-50 transition-colors"
+                    >
+                      <Sparkles className="h-4 w-4 text-pink-600" />
+                      <span>Cadastrar Nova Conta</span>
+                    </button>
+
+                    <button
+                      id="menu-logout-btn"
+                      onClick={() => {
+                        onLogout();
+                        setShowUserMenu(false);
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4 text-rose-600" />
+                      <span>Terminar Sessão</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </>
           )}
 

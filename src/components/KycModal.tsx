@@ -1,116 +1,199 @@
 import React, { useState } from 'react';
-import { ShieldCheck, X, FileText, CheckCircle, Smartphone } from 'lucide-react';
+import { 
+  ShieldCheck, 
+  X, 
+  FileText, 
+  CheckCircle, 
+  Smartphone, 
+  Upload, 
+  Camera, 
+  Lock, 
+  AlertTriangle, 
+  CheckCircle2, 
+  UserCheck 
+} from 'lucide-react';
 
 interface KycModalProps {
   onClose: () => void;
   onSubmitKyc: (data: {
     fullName: string;
+    publicName: string;
+    dateOfBirth: string;
     docType: 'BI' | 'Passaporte' | 'DIRE';
     docNumber: string;
     nuit: string;
     phone: string;
     payoutMethod: string;
+    isOver18: boolean;
+    hasConsent: boolean;
   }) => void;
 }
 
 export const KycModal: React.FC<KycModalProps> = ({ onClose, onSubmitKyc }) => {
-  const [fullName, setFullName] = useState('Nádia Silva');
+  const [legalFullName, setLegalFullName] = useState('Nádia Silva Cassamo');
+  const [publicName, setPublicName] = useState('Luna Moz (@luna_exclusive)');
+  const [dateOfBirth, setDateOfBirth] = useState('2001-05-14');
   const [docType, setDocType] = useState<'BI' | 'Passaporte' | 'DIRE'>('BI');
   const [docNumber, setDocNumber] = useState('110100452319A');
   const [nuit, setNuit] = useState('149823091');
-  const [phone, setPhone] = useState('841234567');
+  const [phone, setPhone] = useState('84 123 4567');
   const [payoutMethod, setPayoutMethod] = useState('mpesa');
+  
+  // Upload status states
+  const [docFrontUploaded, setDocFrontUploaded] = useState(true);
+  const [docBackUploaded, setDocBackUploaded] = useState(true);
+  const [selfieUploaded, setSelfieUploaded] = useState(true);
+
+  // 18+ Consent checkboxes
+  const [isOver18Confirmed, setIsOver18Confirmed] = useState(true);
+  const [isParticipantConsentConfirmed, setIsParticipantConsentConfirmed] = useState(true);
+  const [isTermsAccepted, setIsTermsAccepted] = useState(true);
+
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isOver18Confirmed || !isParticipantConsentConfirmed || !isTermsAccepted) {
+      alert('É obrigatório confirmar a declaração de maioridade (+18) e consentimentos para monetizar.');
+      return;
+    }
+
     setIsSubmitted(true);
     setTimeout(() => {
       onSubmitKyc({
-        fullName,
+        fullName: legalFullName,
+        publicName,
+        dateOfBirth,
         docType,
         docNumber,
         nuit,
         phone,
-        payoutMethod
+        payoutMethod,
+        isOver18: isOver18Confirmed,
+        hasConsent: isParticipantConsentConfirmed,
       });
       onClose();
     }, 1200);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
       <div 
-        className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-pink-100 space-y-5 my-8"
+        className="w-full max-w-xl rounded-3xl bg-white p-6 sm:p-7 shadow-2xl border border-pink-100 space-y-5 my-8 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-pink-100 pb-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-pink-100 text-pink-600">
+        <div className="flex items-center justify-between border-b border-stone-100 pb-3.5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-pink-600 to-rose-500 text-white shadow-md shadow-pink-500/20">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-display text-base font-bold text-stone-900">
-                Verificação de Criador FanScale (KYC)
-              </h3>
-              <p className="text-[11px] text-stone-400">
-                Conformidade com a legislação de Moçambique 🇲🇿
+              <div className="flex items-center gap-2">
+                <h3 className="font-display text-base font-bold text-stone-900">
+                  Verificação de Criador 18+ (KYC)
+                </h3>
+                <span className="rounded-full bg-pink-100 px-2 py-0.5 text-[10px] font-black text-pink-700">
+                  18+ Obrigatório
+                </span>
+              </div>
+              <p className="text-[11px] text-stone-500">
+                Conformidade com a legislação de Moçambique & Proteção de Identidade
               </p>
             </div>
           </div>
 
-          <button onClick={onClose} className="text-stone-400 hover:text-stone-700">
+          <button onClick={onClose} className="rounded-full p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {isSubmitted ? (
-          <div className="py-8 text-center space-y-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 mx-auto">
-              <CheckCircle className="h-8 w-8" />
+          <div className="py-10 text-center space-y-3.5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 mx-auto shadow-inner">
+              <CheckCircle className="h-9 w-9" />
             </div>
-            <h4 className="font-display text-base font-bold text-stone-900">
-              Documentos Submetidos com Sucesso!
+            <h4 className="font-display text-lg font-bold text-stone-900">
+              Documentos e Selfie 18+ Submetidos!
             </h4>
-            <p className="text-xs text-stone-500 max-w-sm mx-auto">
-              A equipa de conformidade do FanScale Moçambique irá rever os teus dados em até 24 horas.
+            <p className="text-xs text-stone-500 max-w-sm mx-auto leading-relaxed">
+              A equipa de conformidade da FanScale Moçambique irá rever os teus dados em até 24 horas. O teu nome civil permanecerá 100% confidencial.
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 text-xs text-stone-800">
             
-            <div className="rounded-2xl bg-pink-50 p-3.5 text-stone-700 space-y-1">
-              <span className="font-bold text-pink-900 block">Porque é necessária a verificação?</span>
-              <p className="text-[11px] text-stone-600">
-                Para desbloquear recebimentos M-Pesa e garantir uma comunidade segura para todos os utilizadores moçambicanos.
-              </p>
+            {/* Privacy Badge */}
+            <div className="flex items-start gap-2.5 rounded-2xl bg-pink-50/70 border border-pink-100 p-3 text-stone-700">
+              <Lock className="h-4 w-4 text-pink-600 shrink-0 mt-0.5" />
+              <div className="text-[11px] leading-relaxed">
+                <strong className="text-pink-900 block font-bold">Privacidade Total da Marca:</strong>
+                O teu nome legal e documento nunca são exibidos ao público. Os fãs verão apenas o teu nome artístico e @username.
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="block font-bold text-stone-700">Nome Completo (como no Documento)</label>
-              <input
-                type="text"
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full rounded-2xl border border-stone-200 bg-stone-50 p-2.5 font-semibold text-stone-900 focus:border-pink-500 focus:outline-none"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
+            {/* Public vs Private Name */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="block font-bold text-stone-700">Tipo de Documento</label>
+                <label className="block font-bold text-stone-700">
+                  Nome Legal Completo <span className="text-pink-600 font-normal">(Confidencial)</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={legalFullName}
+                  onChange={(e) => setLegalFullName(e.target.value)}
+                  placeholder="Nome conforme consta no B.I."
+                  className="w-full rounded-xl border border-stone-200 bg-stone-50 p-2.5 font-semibold text-stone-900 focus:border-pink-500 focus:bg-white focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block font-bold text-stone-700">
+                  Nome Artístico Público
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={publicName}
+                  onChange={(e) => setPublicName(e.target.value)}
+                  placeholder="Ex: Luna Moz VIP"
+                  className="w-full rounded-xl border border-stone-200 bg-stone-50 p-2.5 font-semibold text-stone-900 focus:border-pink-500 focus:bg-white focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Date of Birth & Document Type */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="block font-bold text-stone-700">
+                  Data de Nascimento <span className="text-rose-600 font-bold">(+18)</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={dateOfBirth}
+                  max="2008-01-01"
+                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  className="w-full rounded-xl border border-stone-200 bg-stone-50 p-2.5 font-semibold text-stone-900 focus:border-pink-500 focus:bg-white focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block font-bold text-stone-700">Tipo de Documento Oficial</label>
                 <select
                   value={docType}
                   onChange={(e) => setDocType(e.target.value as any)}
-                  className="w-full rounded-2xl border border-stone-200 bg-stone-50 p-2.5 font-semibold text-stone-900 focus:border-pink-500 focus:outline-none"
+                  className="w-full rounded-xl border border-stone-200 bg-stone-50 p-2.5 font-semibold text-stone-900 focus:border-pink-500 focus:bg-white focus:outline-none"
                 >
-                  <option value="BI">Bilhete de Identidade (B.I.)</option>
-                  <option value="Passaporte">Passaporte Moçambicano</option>
-                  <option value="DIRE">DIRE</option>
+                  <option value="BI">Bilhete de Identidade (B.I. Moçambique)</option>
+                  <option value="Passaporte">Passaporte Moçambicano / Internacional</option>
+                  <option value="DIRE">DIRE (Estrangeiro Residente)</option>
                 </select>
               </div>
+            </div>
 
+            {/* Document Number & NUIT */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="block font-bold text-stone-700">Número do Documento</label>
                 <input
@@ -119,75 +202,167 @@ export const KycModal: React.FC<KycModalProps> = ({ onClose, onSubmitKyc }) => {
                   value={docNumber}
                   onChange={(e) => setDocNumber(e.target.value)}
                   placeholder="Ex: 110100452319A"
-                  className="w-full rounded-2xl border border-stone-200 bg-stone-50 p-2.5 font-semibold text-stone-900 focus:border-pink-500 focus:outline-none"
+                  className="w-full rounded-xl border border-stone-200 bg-stone-50 p-2.5 font-semibold text-stone-900 focus:border-pink-500 focus:bg-white focus:outline-none"
                 />
               </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="block font-bold text-stone-700">NUÍT (Moçambique)</label>
+                <label className="block font-bold text-stone-700">NUÍT Moçambique</label>
                 <input
                   type="text"
                   required
                   value={nuit}
                   onChange={(e) => setNuit(e.target.value)}
-                  placeholder="9 dígitos"
-                  className="w-full rounded-2xl border border-stone-200 bg-stone-50 p-2.5 font-semibold text-stone-900 focus:border-pink-500 focus:outline-none"
+                  placeholder="9 dígitos para emissão fiscal"
+                  className="w-full rounded-xl border border-stone-200 bg-stone-50 p-2.5 font-semibold text-stone-900 focus:border-pink-500 focus:bg-white focus:outline-none"
                 />
               </div>
+            </div>
 
-              <div className="space-y-1">
-                <label className="block font-bold text-stone-700">Telemóvel M-Pesa / e-Mola</label>
+            {/* Document Photo Uploads Simulation */}
+            <div className="space-y-1.5 pt-1">
+              <label className="block font-bold text-stone-700">
+                Fotos do Documento & Selfie de Validação Facial
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                <div 
+                  onClick={() => setDocFrontUploaded(!docFrontUploaded)}
+                  className={`cursor-pointer rounded-2xl border p-3 text-center transition-all flex flex-col items-center justify-center gap-1.5 ${
+                    docFrontUploaded ? 'border-emerald-300 bg-emerald-50/70 text-emerald-800' : 'border-dashed border-stone-300 bg-stone-50 text-stone-600'
+                  }`}
+                >
+                  {docFrontUploaded ? (
+                    <CheckCircle className="h-5 w-5 text-emerald-600" />
+                  ) : (
+                    <Upload className="h-5 w-5 text-stone-400" />
+                  )}
+                  <span className="text-[11px] font-bold">Frente do B.I.</span>
+                  <span className="text-[9px] text-stone-500">{docFrontUploaded ? 'Anexado' : 'Clique p/ carregar'}</span>
+                </div>
+
+                <div 
+                  onClick={() => setDocBackUploaded(!docBackUploaded)}
+                  className={`cursor-pointer rounded-2xl border p-3 text-center transition-all flex flex-col items-center justify-center gap-1.5 ${
+                    docBackUploaded ? 'border-emerald-300 bg-emerald-50/70 text-emerald-800' : 'border-dashed border-stone-300 bg-stone-50 text-stone-600'
+                  }`}
+                >
+                  {docBackUploaded ? (
+                    <CheckCircle className="h-5 w-5 text-emerald-600" />
+                  ) : (
+                    <Upload className="h-5 w-5 text-stone-400" />
+                  )}
+                  <span className="text-[11px] font-bold">Verso do B.I.</span>
+                  <span className="text-[9px] text-stone-500">{docBackUploaded ? 'Anexado' : 'Clique p/ carregar'}</span>
+                </div>
+
+                <div 
+                  onClick={() => setSelfieUploaded(!selfieUploaded)}
+                  className={`cursor-pointer rounded-2xl border p-3 text-center transition-all flex flex-col items-center justify-center gap-1.5 ${
+                    selfieUploaded ? 'border-pink-300 bg-pink-50/70 text-pink-800' : 'border-dashed border-stone-300 bg-stone-50 text-stone-600'
+                  }`}
+                >
+                  {selfieUploaded ? (
+                    <UserCheck className="h-5 w-5 text-pink-600" />
+                  ) : (
+                    <Camera className="h-5 w-5 text-stone-400" />
+                  )}
+                  <span className="text-[11px] font-bold">Selfie com B.I.</span>
+                  <span className="text-[9px] text-stone-500">{selfieUploaded ? 'Validado' : 'Clique p/ selfie'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Payout Information */}
+            <div className="space-y-1.5 pt-1">
+              <label className="block font-bold text-stone-700">Telemóvel M-Pesa / e-Mola para Levantamento (80% Receita Líquida)</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input
                   type="tel"
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="84 / 86..."
-                  className="w-full rounded-2xl border border-stone-200 bg-stone-50 p-2.5 font-semibold text-stone-900 focus:border-pink-500 focus:outline-none"
+                  className="w-full rounded-xl border border-stone-200 bg-stone-50 p-2.5 font-semibold text-stone-900 focus:border-pink-500 focus:bg-white focus:outline-none"
                 />
+
+                <div className="grid grid-cols-3 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setPayoutMethod('mpesa')}
+                    className={`py-2 px-1 rounded-xl border text-[11px] font-bold transition-all ${
+                      payoutMethod === 'mpesa' ? 'border-pink-600 bg-pink-50 text-pink-700 shadow-sm' : 'border-stone-200 bg-stone-50 text-stone-600'
+                    }`}
+                  >
+                    M-Pesa
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPayoutMethod('emola')}
+                    className={`py-2 px-1 rounded-xl border text-[11px] font-bold transition-all ${
+                      payoutMethod === 'emola' ? 'border-pink-600 bg-pink-50 text-pink-700 shadow-sm' : 'border-stone-200 bg-stone-50 text-stone-600'
+                    }`}
+                  >
+                    e-Mola
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPayoutMethod('bank')}
+                    className={`py-2 px-1 rounded-xl border text-[11px] font-bold transition-all ${
+                      payoutMethod === 'bank' ? 'border-pink-600 bg-pink-50 text-pink-700 shadow-sm' : 'border-stone-200 bg-stone-50 text-stone-600'
+                    }`}
+                  >
+                    Banco MZ
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="block font-bold text-stone-700">Método Preferencial para Recebimento de Rendimentos</label>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPayoutMethod('mpesa')}
-                  className={`p-2.5 rounded-xl border text-center font-bold ${
-                    payoutMethod === 'mpesa' ? 'border-pink-600 bg-pink-50 text-pink-700' : 'border-stone-200'
-                  }`}
-                >
-                  Vodacom M-Pesa
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPayoutMethod('emola')}
-                  className={`p-2.5 rounded-xl border text-center font-bold ${
-                    payoutMethod === 'emola' ? 'border-pink-600 bg-pink-50 text-pink-700' : 'border-stone-200'
-                  }`}
-                >
-                  Movitel e-Mola
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPayoutMethod('bank')}
-                  className={`p-2.5 rounded-xl border text-center font-bold ${
-                    payoutMethod === 'bank' ? 'border-pink-600 bg-pink-50 text-pink-700' : 'border-stone-200'
-                  }`}
-                >
-                  Banco BCI / BIM
-                </button>
-              </div>
+            {/* Legal Declarations & Checkboxes */}
+            <div className="space-y-2 pt-2 border-t border-stone-100">
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isOver18Confirmed}
+                  onChange={(e) => setIsOver18Confirmed(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded text-pink-600 focus:ring-pink-500"
+                />
+                <span className="text-[11px] text-stone-700 leading-tight">
+                  <strong className="text-stone-900">Declaração de Maioridade (+18):</strong> Confirmo sob compromisso de honra que possuo idade igual ou superior a 18 anos completos.
+                </span>
+              </label>
+
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isParticipantConsentConfirmed}
+                  onChange={(e) => setIsParticipantConsentConfirmed(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded text-pink-600 focus:ring-pink-500"
+                />
+                <span className="text-[11px] text-stone-700 leading-tight">
+                  <strong className="text-stone-900">Consentimento de Participantes:</strong> Declaro que todo o conteúdo publicado por mim conta com consentimento voluntário e explícito de todas as pessoas retratadas, todas maiores de 18 anos.
+                </span>
+              </label>
+
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isTermsAccepted}
+                  onChange={(e) => setIsTermsAccepted(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded text-pink-600 focus:ring-pink-500"
+                />
+                <span className="text-[11px] text-stone-700 leading-tight">
+                  Concordo com os Termos de Proteção Anti-Pirataria FanScale, retenção de comissão de 20% e pagamentos em Meticais (80% repassados ao criador).
+                </span>
+              </label>
             </div>
 
             <button
+              id="submit-kyc-btn"
               type="submit"
-              className="w-full rounded-full bg-gradient-to-r from-pink-600 via-rose-500 to-pink-500 py-3 font-bold text-white shadow-lg shadow-pink-500/30 hover:from-pink-700 hover:to-rose-600 transition-all"
+              disabled={!isOver18Confirmed || !isParticipantConsentConfirmed || !isTermsAccepted}
+              className="w-full rounded-2xl bg-gradient-to-r from-pink-600 via-rose-500 to-pink-500 py-3.5 font-bold text-white shadow-lg shadow-pink-500/25 hover:from-pink-700 hover:to-rose-600 transition-all disabled:opacity-50 hover:scale-[1.01]"
             >
-              Enviar Dados para Aprovação
+              Submeter Verificação 18+ para Ativação
             </button>
 
           </form>
@@ -196,3 +371,4 @@ export const KycModal: React.FC<KycModalProps> = ({ onClose, onSubmitKyc }) => {
     </div>
   );
 };
+
