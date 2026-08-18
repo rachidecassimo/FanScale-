@@ -219,6 +219,7 @@ export interface WalletTransaction {
   description: string;
   amountMT: number;
   date: string;
+  rawDate?: string; // ISO format: YYYY-MM-DD or full timestamp for precise interval filtering
   status: 'completed' | 'pending' | 'failed';
   provider: PaymentProvider;
   referenceNumber: string;
